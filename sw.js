@@ -1,11 +1,14 @@
 /* Guarda o RK Transportes no aparelho para funcionar sem internet. */
-const VERSAO = "rk-transportes-v1";
+const VERSAO = "rk-transportes-v2";
 const ARQUIVOS = [
   "./",
   "index.html",
   "manifest.webmanifest",
   "icone-192.png",
   "icone-512.png",
+  "lib/firebase-app-compat.js",
+  "lib/firebase-auth-compat.js",
+  "lib/firebase-firestore-compat.js",
   "lib/jspdf.plugin.autotable.min.js",
   "lib/jspdf.umd.min.js",
   "lib/pdf.min.js",

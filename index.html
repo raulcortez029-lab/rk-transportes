@@ -237,6 +237,42 @@ dialog::backdrop{background:rgba(11,13,16,.5)}
 .erro{color:var(--alerta);font-size:13.5px;margin:0 0 12px;font-weight:600;display:none}
 .erro.on{display:block}
 
+/* ---------- entrada (login) ---------- */
+#portao{
+  position:fixed;inset:0;z-index:100;background:var(--azul);
+  display:grid;place-items:center;padding:24px;
+}
+#portao[hidden]{display:none}
+.portao-cartao{width:min(380px,100%);text-align:center}
+.portao-placa{
+  background:#fff;border-radius:14px;padding:18px 20px 14px;margin-bottom:26px;
+  border:3px solid var(--preto);box-shadow:0 12px 40px rgba(0,0,0,.3);
+}
+.portao-placa b{
+  display:block;font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:.14em;color:var(--preto);
+}
+.portao-placa span{display:block;font-size:11px;letter-spacing:.22em;color:var(--cinza-texto);margin-top:6px;font-weight:600}
+.portao-cartao h1{font-family:var(--display);color:#fff;font-size:20px;margin:0 0 6px;font-weight:600}
+.portao-cartao p{color:#A9BDD3;font-size:14px;margin:0 0 22px}
+.portao-cartao input{
+  width:100%;padding:15px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.08);color:#fff;font-size:16px;margin-bottom:12px;text-align:center;
+}
+.portao-cartao input::placeholder{color:#7F98B4}
+.portao-cartao input:focus{outline:none;border-color:#fff;background:rgba(255,255,255,.14)}
+.portao-cartao .btn{width:100%;justify-content:center;background:#fff;color:var(--azul);padding:15px;font-size:16px}
+.portao-cartao .btn:hover{background:#E8EEF5}
+.portao-erro{color:#FF9E93;font-size:14px;font-weight:600;margin:0 0 14px;min-height:20px}
+.portao-nota{color:#7F98B4;font-size:12.5px;margin-top:20px;line-height:1.5}
+
+/* ---------- estado da conexão ---------- */
+.chip-offline{
+  background:#3A2A18;color:#FFD9A8;font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;
+  display:none;align-items:center;gap:7px;
+}
+.chip-offline.on{display:inline-flex}
+.chip-offline i{width:7px;height:7px;border-radius:50%;background:#FFB454;display:block}
+
 /* ---------- menu ---------- */
 .menu-botao{
   width:46px;height:46px;border-radius:12px;border:1px solid rgba(255,255,255,.28);
@@ -417,12 +453,26 @@ table.tv{width:100%;border-collapse:collapse}
 </style>
 </head>
 <body>
+<div id="portao" hidden>
+  <form class="portao-cartao" id="formEntrar">
+    <div class="portao-placa"><b>RK</b><span>TRANSPORTES</span></div>
+    <h1>Digite a senha para entrar</h1>
+    <p>Controle de viagens e despesas</p>
+    <p class="portao-erro" id="erroEntrar"></p>
+    <input type="email" id="entrarEmail" value="rk@2026.com" autocomplete="username" inputmode="email" aria-label="Usuário">
+    <input type="password" id="entrarSenha" placeholder="Senha" autocomplete="current-password" aria-label="Senha" required>
+    <button type="submit" class="btn" id="btnEntrar">Entrar</button>
+    <p class="portao-nota">Depois de entrar uma vez, o app continua aberto neste aparelho e funciona sem internet.</p>
+  </form>
+</div>
+
 <header class="topo">
   <button class="marca" id="irInicio" aria-label="Voltar para a tela inicial">
     <span class="marca__sigla">RK</span>
     <span class="marca__nome">RK Transportes<small>Controle de viagens e despesas</small></span>
   </button>
   <div class="topo__acoes">
+    <span class="chip-offline" id="chipOffline"><i></i>sem internet</span>
     <button class="menu-botao" id="btnMenu" aria-label="Abrir o menu">
       <span></span><span></span><span></span>
       <i class="conta" id="contaLixeira" hidden></i>
@@ -497,6 +547,7 @@ table.tv{width:100%;border-collapse:collapse}
   <button type="button" class="menu-item" data-menu="painel"><i id="icPainel"></i>Dashboard</button>
   <button type="button" class="menu-item" data-menu="lixeira"><i id="icLixo"></i>Lixeira<span class="conta" id="contaMenu" hidden></span></button>
   <button type="button" class="menu-item" data-menu="backup"><i id="icBackup"></i>Backup</button>
+  <button type="button" class="menu-item" data-menu="sair"><i id="icSair"></i>Sair</button>
   <button type="button" class="menu-item" data-fechar style="justify-content:center;color:var(--cinza-texto);font-weight:500">Fechar</button>
 </dialog>
 
@@ -522,6 +573,9 @@ table.tv{width:100%;border-collapse:collapse}
 
 <input type="file" id="arquivoCTe" multiple hidden>
 
+<script src="lib/firebase-app-compat.js"></script>
+<script src="lib/firebase-auth-compat.js"></script>
+<script src="lib/firebase-firestore-compat.js"></script>
 <script>
 "use strict";
 
@@ -534,7 +588,31 @@ const CHAVE = "rk_transportes_v1";
 const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
 const hoje = new Date();
 
-let dados = carregar();
+let dados = { versao:1, caminhoes:[], registros:[], lixeira:[] };
+
+/* ==========================================================
+   NUVEM — os dados ficam guardados no cofre da RK (Firebase).
+   Cada aparelho recebe as mudanças dos outros, e o que for
+   lançado sem internet fica na fila e sobe sozinho depois.
+   ========================================================== */
+const CONFIG_NUVEM = {
+  apiKey: "AIzaSyB51xBZo20jcKa9yornhBq7ebKAFeGj9fY",
+  authDomain: "rk-transportes.firebaseapp.com",
+  projectId: "rk-transportes",
+  storageBucket: "rk-transportes.firebasestorage.app",
+  messagingSenderId: "18782006131",
+  appId: "1:18782006131:web:4e3e964c72fd83ee2b7306"
+};
+
+firebase.initializeApp(CONFIG_NUVEM);
+const autenticacao = firebase.auth();
+const banco = firebase.firestore();
+banco.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+const col = nome => banco.collection(nome);
+const semEspera = promessa => promessa.catch(erro => {
+  console.warn(erro);
+  aviso("Não consegui salvar. Confira sua internet.");
+});
 let estado = {
   vista: "inicio",
   caminhaoId: null,
@@ -557,11 +635,66 @@ function carregar(){
   }catch(e){}
   return { versao:1, caminhoes:[], registros:[], lixeira:[] };
 }
-function salvar(){
+/* Os dados agora moram na nuvem; o Firebase cuida de guardar
+   uma cópia no aparelho para funcionar sem internet. */
+function salvar(){}
+
+/* Lançamentos que ficaram guardados só neste aparelho, da versão anterior. */
+function dadosDoAparelho(){
   try{
-    localStorage.setItem(CHAVE, JSON.stringify(dados));
-  }catch(e){
-    alert("Não foi possível salvar neste navegador. Se estiver em uma janela anônima, abra o programa em uma janela normal.");
+    const bruto = localStorage.getItem(CHAVE);
+    if(!bruto) return null;
+    const d = JSON.parse(bruto);
+    if(!d || !Array.isArray(d.caminhoes) || !Array.isArray(d.registros)) return null;
+    if(!d.caminhoes.length && !d.registros.length) return null;
+    if(!Array.isArray(d.lixeira)) d.lixeira = [];
+    return d;
+  }catch(e){ return null; }
+}
+
+/* Manda para a nuvem, em blocos, um conjunto de dados inteiro. */
+async function enviarParaNuvem(conjunto){
+  const escritas = [];
+  (conjunto.caminhoes||[]).forEach(c => escritas.push(["caminhoes", c.id, c]));
+  (conjunto.registros||[]).forEach(r => escritas.push(["registros", r.id, r]));
+  (conjunto.lixeira||[]).forEach(l => escritas.push(["lixeira", l.id, l]));
+  for(let i = 0; i < escritas.length; i += 400){
+    const lote = banco.batch();
+    escritas.slice(i, i + 400).forEach(([nome, id, doc]) => {
+      const copia = Object.assign({}, doc);
+      delete copia.id;
+      lote.set(col(nome).doc(String(id)), copia);
+    });
+    await lote.commit();
+  }
+  return escritas.length;
+}
+
+/* Aplica várias mudanças de uma vez. Sem internet elas ficam na fila
+   e sobem sozinhas quando a conexão voltar. */
+function aplicar(operacoes){
+  const lotes = [];
+  for(let i = 0; i < operacoes.length; i += 400){
+    const lote = banco.batch();
+    operacoes.slice(i, i + 400).forEach(o => {
+      const ref = col(o.colecao).doc(String(o.id));
+      if(o.tipo === "apagar"){ lote.delete(ref); }
+      else { const d = Object.assign({}, o.doc); delete d.id; lote.set(ref, d); }
+    });
+    lotes.push(lote);
+  }
+  return Promise.all(lotes.map(l => l.commit()));
+}
+
+/* Apaga tudo o que está na nuvem (usado ao restaurar um backup). */
+async function limparNuvem(){
+  for(const nome of ["caminhoes","registros","lixeira"]){
+    const docs = (await col(nome).get()).docs;
+    for(let i = 0; i < docs.length; i += 400){
+      const lote = banco.batch();
+      docs.slice(i, i + 400).forEach(d => lote.delete(d.ref));
+      await lote.commit();
+    }
   }
 }
 const novoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
@@ -621,6 +754,7 @@ const ICONES = {
   excluir: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',
   seta: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
   painel: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  sair: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>',
   backup: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 21h16"/></svg>',
   caminhao: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6h11v9H1z"/><path d="M12 9h4.5l3.5 3.5V15H12z"/><circle cx="5.5" cy="17.5" r="2"/><circle cx="16.5" cy="17.5" r="2"/></svg>',
   clipe: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 1 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>',
@@ -1075,13 +1209,12 @@ document.getElementById("formCaminhao").addEventListener("submit", e => {
     e.preventDefault(); erro.textContent = "Esta placa já está cadastrada."; erro.classList.add("on"); return;
   }
   if(caminhaoEmEdicao){
-    caminhaoEmEdicao.placa = placa; caminhaoEmEdicao.apelido = apelido;
+    semEspera(col("caminhoes").doc(caminhaoEmEdicao.id).set({ placa, apelido }, { merge:true }));
     aviso("Caminhão atualizado.");
   }else{
-    dados.caminhoes.push({ id:novoId(), placa, apelido });
+    semEspera(col("caminhoes").doc(novoId()).set({ placa, apelido, criadoEm: Date.now() }));
     aviso("Caminhão cadastrado.");
   }
-  salvar(); render();
 });
 
 /* ---------------- máscara de dinheiro ---------------- */
@@ -1183,18 +1316,18 @@ document.getElementById("formRegistro").addEventListener("submit", e => {
   }
 
   if(registroEmEdicao){
-    Object.assign(registroEmEdicao, base);
+    semEspera(col("registros").doc(registroEmEdicao.id).set(base, { merge:true }));
     aviso(ehViagem ? "Viagem atualizada." : "Despesa atualizada.");
   }else{
-    dados.registros.push(Object.assign({
-      id: novoId(), caminhaoId: estado.caminhaoId, tipo: estado.tipo, criadoEm: Date.now()
-    }, base));
+    semEspera(col("registros").doc(novoId()).set(Object.assign({
+      caminhaoId: estado.caminhaoId, tipo: estado.tipo, criadoEm: Date.now()
+    }, base)));
     aviso(ehViagem ? "Viagem adicionada." : "Despesa adicionada.");
   }
   const mesDoLancamento = data.slice(0,7).split("-");
   estado.ano = +mesDoLancamento[0];
   estado.mes = +mesDoLancamento[1];
-  salvar(); render();
+  render();
 });
 
 /* ---------------- cliques da tela ---------------- */
@@ -1203,6 +1336,7 @@ const dlgMenu = document.getElementById("dlgMenu");
 document.getElementById("icPainel").innerHTML = ICONES.painel;
 document.getElementById("icLixo").innerHTML = ICONES.excluir;
 document.getElementById("icBackup").innerHTML = ICONES.backup;
+document.getElementById("icSair").innerHTML = ICONES.sair;
 document.getElementById("btnMenu").addEventListener("click", () => dlgMenu.showModal());
 dlgMenu.addEventListener("click", e => {
   const item = e.target.closest("[data-menu]");
@@ -1211,6 +1345,10 @@ dlgMenu.addEventListener("click", e => {
   if(item.dataset.menu === "painel") ir("painel");
   if(item.dataset.menu === "lixeira") ir("lixeira");
   if(item.dataset.menu === "backup") dlgBackup.showModal();
+  if(item.dataset.menu === "sair"){
+    perguntar("Sair do app", "Para entrar de novo você vai precisar da senha.", "Sair",
+      () => autenticacao.signOut());
+  }
 });
 
 document.addEventListener("click", e => {
@@ -1245,10 +1383,13 @@ document.addEventListener("click", e => {
     return perguntar("Mover para a lixeira",
       `${maiuscula(nome)}, no valor de ${brl(r.valor)}, sai da tabela e vai para a lixeira. Você pode restaurar quando quiser.`,
       "Mover para a lixeira", () => {
-        dados.registros = dados.registros.filter(x => x.id !== id);
-        dados.lixeira.unshift({ id:novoId(), tipo:r.tipo, excluidoEm:Date.now(),
-                                caminhaoId:r.caminhaoId, placa:caminhaoAtual().placa, registro:r });
-        salvar(); render(); aviso("Movido para a lixeira.");
+        semEspera(aplicar([
+          { tipo:"apagar", colecao:"registros", id },
+          { tipo:"gravar", colecao:"lixeira", id:novoId(), doc:{
+              tipo:r.tipo, excluidoEm:Date.now(), caminhaoId:r.caminhaoId,
+              placa:caminhaoAtual().placa, registro:r } }
+        ]));
+        aviso("Movido para a lixeira.");
       });
   }
   if(acao === "excluirCaminhao"){
@@ -1258,11 +1399,12 @@ document.addEventListener("click", e => {
       `A placa ${c.placa} sai da tela inicial levando ${plural(v,"viagem","viagens")} e ${plural(d,"despesa","despesas")} de todos os meses. Tudo fica guardado na lixeira e pode voltar depois.`,
       "Mover para a lixeira", () => {
         const filhos = dados.registros.filter(r => r.caminhaoId === c.id);
-        dados.registros = dados.registros.filter(r => r.caminhaoId !== c.id);
-        dados.caminhoes = dados.caminhoes.filter(x => x.id !== c.id);
-        dados.lixeira.unshift({ id:novoId(), tipo:"caminhao", excluidoEm:Date.now(),
-                                caminhaoId:c.id, placa:c.placa, registro:c, filhos });
-        salvar(); ir("inicio"); aviso("Caminhão movido para a lixeira.");
+        const operacoes = filhos.map(f => ({ tipo:"apagar", colecao:"registros", id:f.id }));
+        operacoes.push({ tipo:"apagar", colecao:"caminhoes", id:c.id });
+        operacoes.push({ tipo:"gravar", colecao:"lixeira", id:novoId(), doc:{
+          tipo:"caminhao", excluidoEm:Date.now(), caminhaoId:c.id, placa:c.placa, registro:c, filhos } });
+        semEspera(aplicar(operacoes));
+        ir("inicio"); aviso("Caminhão movido para a lixeira.");
       });
   }
   if(acao === "lixeira") return ir("lixeira");
@@ -1277,19 +1419,19 @@ document.addEventListener("click", e => {
     return perguntar("Excluir definitivamente",
       `${d.titulo} será apagado de vez e não poderá mais ser restaurado.${extra}`,
       "Excluir de vez", () => {
-        dados.lixeira = dados.lixeira.filter(x => x.id !== id);
-        if(l.tipo === "caminhao"){
-          dados.lixeira = dados.lixeira.filter(x => x.caminhaoId !== l.caminhaoId);
-        }
-        salvar(); render(); aviso("Excluído definitivamente.");
+        const alvos = l.tipo === "caminhao"
+          ? dados.lixeira.filter(x => x.id === id || x.caminhaoId === l.caminhaoId)
+          : [l];
+        semEspera(aplicar(alvos.map(x => ({ tipo:"apagar", colecao:"lixeira", id:x.id }))));
+        aviso("Excluído definitivamente.");
       });
   }
   if(acao === "esvaziarLixeira"){
     return perguntar("Esvaziar a lixeira",
       `Os ${dados.lixeira.length} itens guardados serão apagados de vez e não poderão mais ser restaurados.`,
       "Esvaziar", () => {
-        dados.lixeira = [];
-        salvar(); render(); aviso("Lixeira esvaziada.");
+        semEspera(aplicar(dados.lixeira.map(x => ({ tipo:"apagar", colecao:"lixeira", id:x.id }))));
+        aviso("Lixeira esvaziada.");
       });
   }
   if(acao === "importarCTe") return document.getElementById("arquivoCTe").click();
@@ -1304,43 +1446,56 @@ document.addEventListener("change", e => {
 });
 
 /* ---------------- restaurar da lixeira ---------------- */
-function restaurarLixo(idLixo, silencioso){
+function restaurarLixo(idLixo){
   const l = dados.lixeira.find(x => x.id === idLixo);
   if(!l) return;
 
-  if(l.tipo === "caminhao"){
-    const existente = dados.caminhoes.find(c => c.placa === l.registro.placa);
-    if(existente){
-      (l.filhos||[]).forEach(f => { f.caminhaoId = existente.id; dados.registros.push(f); });
-      if(!silencioso) aviso(`A placa ${existente.placa} já estava cadastrada. Os registros voltaram para ela.`);
-    }else{
-      dados.caminhoes.push(l.registro);
-      (l.filhos||[]).forEach(f => dados.registros.push(f));
-      if(!silencioso) aviso("Caminhão restaurado.");
+  const operacoes = [];
+  let mensagem = "Registro restaurado.";
+
+  /* devolve um caminhão e tudo o que foi junto com ele */
+  const devolverCaminhao = item => {
+    const existente = dados.caminhoes.find(c => c.placa === item.registro.placa);
+    const destino = existente ? existente.id : (item.caminhaoId || item.registro.id || novoId());
+    if(!existente){
+      operacoes.push({ tipo:"gravar", colecao:"caminhoes", id:destino, doc:item.registro });
     }
+    (item.filhos||[]).forEach(f => operacoes.push({
+      tipo:"gravar", colecao:"registros", id:f.id || novoId(),
+      doc: Object.assign({}, f, { caminhaoId: destino })
+    }));
+    return { destino, existente };
+  };
+
+  if(l.tipo === "caminhao"){
+    const r = devolverCaminhao(l);
+    mensagem = r.existente
+      ? `A placa ${r.existente.placa} já estava cadastrada. Os registros voltaram para ela.`
+      : "Caminhão restaurado.";
   }else{
-    let dono = dados.caminhoes.find(c => c.id === l.caminhaoId);
-    if(!dono){
+    let donoId = (dados.caminhoes.find(c => c.id === l.caminhaoId) || {}).id;
+    if(!donoId){
       /* o caminhão desse registro também está na lixeira: volta junto */
       const pai = dados.lixeira.find(x => x.tipo === "caminhao" && x.caminhaoId === l.caminhaoId);
       if(pai){
-        restaurarLixo(pai.id, true);
-        dono = dados.caminhoes.find(c => c.id === l.caminhaoId)
-            || dados.caminhoes.find(c => c.placa === pai.registro.placa);
+        donoId = devolverCaminhao(pai).destino;
+        operacoes.push({ tipo:"apagar", colecao:"lixeira", id:pai.id });
+        mensagem = "Registro e caminhão restaurados.";
       }
     }
-    if(!dono){
+    if(!donoId){
       aviso("O caminhão desse registro foi excluído de vez. Cadastre a placa novamente para restaurar.");
       return;
     }
-    l.registro.caminhaoId = dono.id;
-    dados.registros.push(l.registro);
-    if(!silencioso) aviso("Registro restaurado.");
+    operacoes.push({
+      tipo:"gravar", colecao:"registros", id: l.registro.id || novoId(),
+      doc: Object.assign({}, l.registro, { caminhaoId: donoId })
+    });
   }
 
-  dados.lixeira = dados.lixeira.filter(x => x.id !== idLixo);
-  salvar();
-  if(!silencioso) render();
+  operacoes.push({ tipo:"apagar", colecao:"lixeira", id:idLixo });
+  semEspera(aplicar(operacoes));
+  aviso(mensagem);
 }
 
 /* ---------------- backup ---------------- */
@@ -1367,9 +1522,13 @@ document.getElementById("arquivoBackup").addEventListener("change", e => {
     if(!Array.isArray(novo.lixeira)) novo.lixeira = [];
     dlgBackup.close();
     perguntar("Restaurar backup",
-      `O arquivo tem ${novo.caminhoes.length} caminhões e ${novo.registros.length} registros. Restaurar substitui tudo o que está salvo agora neste navegador.`,
+      `O arquivo tem ${plural(novo.caminhoes.length,"caminhão","caminhões")} e ${plural(novo.registros.length,"registro","registros")}. Restaurar substitui tudo o que está na nuvem, para todo mundo. Precisa de internet.`,
       "Restaurar", () => {
-        dados = novo; salvar(); ir("inicio"); aviso("Backup restaurado.");
+        aviso("Restaurando…");
+        limparNuvem()
+          .then(() => enviarParaNuvem(novo))
+          .then(() => { ir("inicio"); aviso("Backup restaurado."); })
+          .catch(() => aviso("Não consegui restaurar. Confira sua internet e tente de novo."));
       });
   };
   leitor.readAsText(arquivo);
@@ -2091,23 +2250,120 @@ document.getElementById("confirmarImportacao").addEventListener("click", () => {
     aviso("Faltou a data ou o valor em " + invalidas.length + " viagem(ns).");
     return;
   }
-  escolhidas.forEach(l => {
-    dados.registros.push({
-      id: novoId(), caminhaoId: estado.caminhaoId, tipo: "viagem", criadoEm: Date.now(),
+  semEspera(aplicar(escolhidas.map(l => ({
+    tipo: "gravar", colecao: "registros", id: novoId(),
+    doc: {
+      caminhaoId: estado.caminhaoId, tipo: "viagem", criadoEm: Date.now(),
       data: l.data, cte: String(l.cte || "").trim(), local: (l.local || "").trim(),
       valor: l.valor, anexo: l.arquivo
-    });
-  });
+    }
+  }))));
   const primeira = escolhidas[0].data.split("-");
   estado.ano = +primeira[0]; estado.mes = +primeira[1];
-  salvar();
   dlgImportar.close();
   render();
   aviso(escolhidas.length === 1 ? "Viagem salva." : escolhidas.length + " viagens salvas.");
 });
 
-/* ---------------- início ---------------- */
-render();
+/* ==========================================================
+   ENTRADA E SINCRONIZAÇÃO
+   ========================================================== */
+const portao = document.getElementById("portao");
+const erroEntrar = document.getElementById("erroEntrar");
+let escutando = false, jaOfereceuEnvio = false;
+const colecoesCarregadas = new Set();
+
+document.getElementById("formEntrar").addEventListener("submit", e => {
+  e.preventDefault();
+  const email = document.getElementById("entrarEmail").value.trim();
+  const senha = document.getElementById("entrarSenha").value;
+  const botao = document.getElementById("btnEntrar");
+  erroEntrar.textContent = "";
+  botao.disabled = true;
+  botao.textContent = "Entrando…";
+  autenticacao.signInWithEmailAndPassword(email, senha)
+    .catch(erro => {
+      const codigo = (erro && erro.code) || "";
+      erroEntrar.textContent =
+        /network/.test(codigo) ? "Sem internet. A primeira entrada precisa de conexão." :
+        /too-many/.test(codigo) ? "Muitas tentativas. Espere um minuto e tente de novo." :
+        /invalid-email|user-not-found/.test(codigo) ? "Usuário inválido." :
+        "Senha incorreta.";
+    })
+    .finally(() => { botao.disabled = false; botao.textContent = "Entrar"; });
+});
+
+autenticacao.onAuthStateChanged(usuario => {
+  if(usuario){
+    portao.hidden = true;
+    document.getElementById("entrarSenha").value = "";
+    if(!escutando) ouvirNuvem();
+  }else{
+    portao.hidden = false;
+    dados = { versao:1, caminhoes:[], registros:[], lixeira:[] };
+    estado.vista = "inicio";
+  }
+});
+
+/* Fica ouvindo o cofre: o que outra pessoa lançar aparece aqui sozinho. */
+function ouvirNuvem(){
+  escutando = true;
+  document.getElementById("tela").innerHTML =
+    '<div class="cartao"><div class="vazio"><strong>Carregando seus dados…</strong>Um instante.</div></div>';
+
+  ["caminhoes","registros","lixeira"].forEach(nome => {
+    col(nome).onSnapshot(retrato => {
+      dados[nome] = retrato.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      if(nome === "caminhoes"){
+        dados.caminhoes.sort((a,b) =>
+          (a.criadoEm||0) - (b.criadoEm||0) || String(a.placa).localeCompare(String(b.placa)));
+      }
+      if(nome === "lixeira"){
+        dados.lixeira.sort((a,b) => (b.excluidoEm||0) - (a.excluidoEm||0));
+      }
+      colecoesCarregadas.add(nome);
+      if(colecoesCarregadas.size === 3){
+        render();
+        oferecerEnvioDoAparelho();
+      }
+    }, erro => {
+      console.warn(erro);
+      aviso("Não consegui ler os dados agora.");
+    });
+  });
+}
+
+/* Primeira vez com a nuvem: leva para lá o que já estava neste aparelho. */
+function oferecerEnvioDoAparelho(){
+  if(jaOfereceuEnvio) return;
+  jaOfereceuEnvio = true;
+  const antigo = dadosDoAparelho();
+  if(!antigo) return;
+  if(dados.caminhoes.length || dados.registros.length) return;
+
+  const v = antigo.registros.filter(r => r.tipo === "viagem").length;
+  const d = antigo.registros.filter(r => r.tipo === "despesa").length;
+  perguntar("Enviar o que está neste aparelho",
+    `Este aparelho guarda ${plural(antigo.caminhoes.length,"caminhão","caminhões")}, ${plural(v,"viagem","viagens")} e ${plural(d,"despesa","despesas")} da versão anterior, e a nuvem ainda está vazia. Enviar tudo agora? Depois disso as outras pessoas também passam a ver esses lançamentos.`,
+    "Enviar tudo", () => {
+      aviso("Enviando…");
+      enviarParaNuvem(antigo)
+        .then(quantos => {
+          localStorage.setItem(CHAVE + "_enviado", JSON.stringify(antigo));
+          localStorage.removeItem(CHAVE);
+          aviso(quantos + " itens enviados para a nuvem.");
+        })
+        .catch(() => aviso("Não consegui enviar. Confira a internet e tente de novo."));
+    });
+}
+
+/* Aviso de que está sem internet (o que for lançado sobe depois). */
+function marcarConexao(){
+  document.getElementById("chipOffline").classList.toggle("on", !navigator.onLine);
+}
+window.addEventListener("online", marcarConexao);
+window.addEventListener("offline", marcarConexao);
+marcarConexao();
 
 /* Guarda o programa inteiro no aparelho, para abrir sem internet. */
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
