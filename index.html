@@ -1,0 +1,2120 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RK Transportes — Viagens e Despesas</title>
+<meta name="theme-color" content="#0E2A47">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RK Transportes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icone-192.png">
+<link rel="icon" href="icone-192.png">
+<style>
+@font-face{font-family:'Archivo';font-style:normal;font-weight:500;font-display:swap;src:url(fontes/Archivo-500.woff2) format('woff2')}
+@font-face{font-family:'Archivo';font-style:normal;font-weight:600;font-display:swap;src:url(fontes/Archivo-600.woff2) format('woff2')}
+@font-face{font-family:'Archivo';font-style:normal;font-weight:700;font-display:swap;src:url(fontes/Archivo-700.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url(fontes/IBMPlexMono-500.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:600;font-display:swap;src:url(fontes/IBMPlexMono-600.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:400;font-display:swap;src:url(fontes/IBMPlexSans-400.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:500;font-display:swap;src:url(fontes/IBMPlexSans-500.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:600;font-display:swap;src:url(fontes/IBMPlexSans-600.woff2) format('woff2')}
+
+:root{
+  --azul:#0E2A47;
+  --azul-claro:#1B4A7A;
+  --cinza:#EDF0F4;
+  --cinza-linha:#DCE2EA;
+  --cinza-texto:#5A6473;
+  --preto:#0B0D10;
+  --branco:#FFFFFF;
+  --alerta:#9B2C22;
+  --raio:14px;
+  --sombra:0 1px 2px rgba(11,13,16,.06), 0 8px 24px rgba(11,13,16,.06);
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --corpo:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono","SF Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--cinza);
+  color:var(--preto);
+  font-family:var(--corpo);
+  font-size:16px;
+  line-height:1.45;
+  -webkit-text-size-adjust:100%;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--azul-claro);outline-offset:2px;border-radius:6px}
+
+/* ---------- topo ---------- */
+.topo{
+  background:var(--azul);color:#fff;
+  padding:14px 20px;padding-top:calc(14px + env(safe-area-inset-top));
+  display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:20;
+}
+.marca{background:none;border:0;padding:0;display:flex;align-items:center;gap:12px;color:#fff;text-align:left;flex:1;min-width:0}
+.marca__sigla{
+  font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:.06em;
+  background:#fff;color:var(--azul);width:42px;height:42px;border-radius:10px;
+  display:grid;place-items:center;flex:none;
+}
+.marca__nome{font-family:var(--display);font-weight:600;font-size:17px;letter-spacing:.02em;line-height:1.1;display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.marca__nome small{display:block;font-family:var(--corpo);font-weight:400;font-size:12px;letter-spacing:.02em;color:#A9BDD3;margin-top:3px}
+.topo__acoes{display:flex;gap:8px;flex:none}
+
+/* ---------- estrutura ---------- */
+.area{max-width:1040px;margin:0 auto;padding:22px 20px 60px}
+.trilha{max-width:1040px;margin:0 auto;padding:14px 20px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.voltar{
+  background:var(--branco);border:1px solid var(--cinza-linha);border-radius:999px;
+  padding:8px 16px 8px 12px;display:inline-flex;align-items:center;gap:7px;
+  font-size:14px;font-weight:500;box-shadow:var(--sombra);
+}
+.voltar:hover{border-color:var(--azul-claro);color:var(--azul)}
+.migalha{font-size:13px;color:var(--cinza-texto);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.migalha b{color:var(--azul);font-weight:600}
+
+.titulo{font-family:var(--display);font-weight:600;font-size:26px;letter-spacing:-.01em;margin:0 0 4px}
+.sub{color:var(--cinza-texto);font-size:15px;margin:0 0 22px}
+.linha-titulo{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.linha-titulo .titulo{margin-bottom:2px}
+.linha-titulo .sub{margin:0}
+
+/* ---------- botões ---------- */
+.btn{
+  border:1px solid transparent;border-radius:10px;padding:11px 18px;
+  font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:8px;
+  background:var(--azul);color:#fff;transition:background .15s,transform .1s,border-color .15s;
+}
+.btn:hover{background:var(--azul-claro)}
+.btn:active{transform:translateY(1px)}
+.btn--fantasma{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.28);color:#fff;padding:9px 14px;font-size:14px}
+.btn--fantasma:hover{background:rgba(255,255,255,.2)}
+.btn--claro{background:var(--branco);color:var(--azul);border-color:var(--cinza-linha);box-shadow:var(--sombra)}
+.btn--claro:hover{background:var(--branco);border-color:var(--azul-claro)}
+.btn--neutro{background:transparent;color:var(--cinza-texto);border-color:var(--cinza-linha)}
+.btn--neutro:hover{background:var(--branco);color:var(--preto)}
+.btn--perigo{background:var(--alerta)}
+.btn--perigo:hover{background:#7d221a}
+.btn[disabled]{opacity:.45;pointer-events:none}
+
+/* ---------- placas (tela inicial) ---------- */
+.placas{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.placa{
+  background:var(--branco);border:2px solid var(--preto);border-radius:12px;overflow:hidden;
+  padding:0;text-align:left;box-shadow:var(--sombra);transition:transform .12s,box-shadow .12s;
+  display:block;width:100%;
+}
+.placa:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(11,13,16,.16)}
+.placa__faixa{
+  background:var(--azul);color:#fff;display:flex;justify-content:space-between;align-items:center;
+  padding:5px 12px;font-size:10px;letter-spacing:.22em;font-weight:600;font-family:var(--display);
+}
+.placa__num{
+  font-family:var(--display);font-weight:700;font-size:clamp(26px,7vw,32px);letter-spacing:.12em;
+  text-align:center;padding:16px 10px 10px;color:var(--preto);word-break:break-all;
+}
+.placa__pe{
+  border-top:1px solid var(--cinza-linha);padding:9px 14px;display:flex;justify-content:space-between;
+  font-size:12.5px;color:var(--cinza-texto);background:#FAFBFC;
+}
+.placa--nova{
+  border:2px dashed var(--cinza-linha);background:#FAFBFC;color:var(--azul);
+  min-height:132px;display:grid;place-items:center;font-family:var(--display);font-weight:600;font-size:15px;
+}
+.placa--nova:hover{border-color:var(--azul);background:var(--branco)}
+
+/* ---------- escolha viagens/despesas ---------- */
+.escolhas{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.escolha{
+  background:var(--branco);border:1px solid var(--cinza-linha);border-radius:var(--raio);
+  padding:22px;text-align:left;box-shadow:var(--sombra);display:flex;gap:16px;align-items:flex-start;
+  transition:transform .12s,border-color .12s,box-shadow .12s;
+}
+.escolha:hover{transform:translateY(-2px);border-color:var(--azul);box-shadow:0 10px 26px rgba(11,13,16,.1)}
+.escolha__icone{
+  width:46px;height:46px;border-radius:12px;background:var(--azul);color:#fff;
+  display:grid;place-items:center;flex:none;
+}
+.escolha h3{font-family:var(--display);font-size:19px;margin:2px 0 4px;font-weight:600}
+.escolha p{margin:0;font-size:14px;color:var(--cinza-texto)}
+
+/* ---------- barra de mês ---------- */
+.mes-barra{
+  background:var(--branco);border:1px solid var(--cinza-linha);border-radius:var(--raio);
+  padding:12px;display:flex;align-items:center;gap:10px;box-shadow:var(--sombra);margin-bottom:16px;flex-wrap:wrap;
+}
+.mes-seta{
+  width:42px;height:42px;border-radius:10px;border:1px solid var(--cinza-linha);background:var(--branco);
+  display:grid;place-items:center;flex:none;font-size:18px;color:var(--azul);
+}
+.mes-seta:hover{background:var(--cinza)}
+.mes-campos{display:flex;gap:8px;flex:1;min-width:180px}
+.mes-campos select{
+  flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--cinza-linha);background:var(--branco);
+  font-weight:600;font-size:15px;min-width:0;
+}
+.mes-campos select:last-child{max-width:112px}
+
+/* ---------- tabela ---------- */
+.cartao{background:var(--branco);border:1px solid var(--cinza-linha);border-radius:var(--raio);box-shadow:var(--sombra);overflow:hidden}
+.tabela{width:100%;border-collapse:collapse;font-size:15px}
+.tabela thead th{
+  background:var(--azul);color:#fff;font-family:var(--display);font-weight:600;font-size:12.5px;
+  letter-spacing:.08em;text-transform:uppercase;text-align:left;padding:13px 14px;white-space:nowrap;
+}
+.tabela td{padding:13px 14px;border-bottom:1px solid var(--cinza-linha);vertical-align:middle}
+.tabela tbody tr:nth-child(even) td{background:#FAFBFC}
+.tabela tbody tr:hover td{background:#F3F6FA}
+.num{font-family:var(--mono);font-weight:500;white-space:nowrap}
+.dinheiro{font-family:var(--mono);font-weight:600;text-align:right;white-space:nowrap}
+th.dinheiro{text-align:right}
+.acoes{width:96px;text-align:right;white-space:nowrap}
+.icone-btn{
+  width:34px;height:34px;border-radius:8px;border:1px solid var(--cinza-linha);background:var(--branco);
+  display:inline-grid;place-items:center;margin-left:6px;color:var(--cinza-texto);
+}
+.icone-btn:hover{color:var(--azul);border-color:var(--azul)}
+.icone-btn--perigo:hover{color:var(--alerta);border-color:var(--alerta)}
+.etiqueta{
+  display:inline-block;background:var(--azul);color:#fff;font-size:11px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;margin-left:8px;
+  font-family:var(--display);vertical-align:1px;
+}
+.vazio{padding:46px 22px;text-align:center;color:var(--cinza-texto)}
+.vazio strong{display:block;color:var(--preto);font-family:var(--display);font-size:17px;margin-bottom:6px}
+
+/* ---------- totais ---------- */
+.totais{border-top:2px solid var(--azul);background:#FAFBFC}
+.total-linha{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:12px 16px;border-bottom:1px solid var(--cinza-linha)}
+.total-linha:last-child{border-bottom:0}
+.total-linha span{font-size:14.5px;color:var(--cinza-texto)}
+.total-linha b{font-family:var(--mono);font-size:16px;font-weight:600}
+.total-linha--forte{background:var(--azul);color:#fff;padding:16px}
+.total-linha--forte span{color:#C6D6E6;font-weight:600;font-size:15px}
+.total-linha--forte b{color:#fff;font-size:20px}
+
+.ferramentas{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.aviso{
+  margin-top:26px;font-size:13px;color:var(--cinza-texto);background:var(--branco);
+  border:1px solid var(--cinza-linha);border-left:4px solid var(--azul);border-radius:10px;padding:14px 16px;
+}
+.aviso b{color:var(--preto)}
+
+/* ---------- diálogos ---------- */
+dialog{
+  border:0;border-radius:16px;padding:0;width:min(480px,calc(100vw - 24px));
+  box-shadow:0 20px 60px rgba(11,13,16,.3);color:var(--preto);
+}
+dialog::backdrop{background:rgba(11,13,16,.5)}
+.dlg__topo{padding:20px 22px 0}
+.dlg__topo h2{font-family:var(--display);font-size:20px;margin:0 0 4px;font-weight:600}
+.dlg__topo p{margin:0;font-size:14px;color:var(--cinza-texto)}
+.dlg__corpo{padding:18px 22px}
+.dlg__pe{padding:14px 22px 20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.campo{margin-bottom:14px}
+.campo label{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px}
+.campo input,.campo select,.campo textarea{
+  width:100%;padding:12px 14px;border:1px solid var(--cinza-linha);border-radius:10px;background:var(--branco);
+}
+.campo input:focus,.campo select:focus{outline:none;border-color:var(--azul);box-shadow:0 0 0 3px rgba(27,74,122,.14)}
+.campo--dupla{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.campo .dica{font-size:12.5px;color:var(--cinza-texto);margin-top:6px}
+.moeda{position:relative}
+.moeda span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--cinza-texto);font-size:15px}
+.moeda input{padding-left:40px;font-family:var(--mono);font-weight:600}
+.seletor{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:var(--cinza);padding:5px;border-radius:12px}
+.seletor button{
+  border:0;background:transparent;padding:10px;border-radius:9px;font-weight:600;font-size:14.5px;color:var(--cinza-texto);
+}
+.seletor button[aria-pressed="true"]{background:var(--branco);color:var(--azul);box-shadow:var(--sombra)}
+.erro{color:var(--alerta);font-size:13.5px;margin:0 0 12px;font-weight:600;display:none}
+.erro.on{display:block}
+
+/* ---------- menu ---------- */
+.menu-botao{
+  width:46px;height:46px;border-radius:12px;border:1px solid rgba(255,255,255,.28);
+  background:rgba(255,255,255,.1);display:grid;place-content:center;gap:5px;position:relative;padding:0;
+}
+.menu-botao:hover{background:rgba(255,255,255,.2)}
+.menu-botao span{display:block;width:20px;height:2px;background:#fff;border-radius:2px}
+.menu-botao .conta{position:absolute;top:-6px;right:-6px}
+.conta{
+  background:#fff;color:var(--azul);border-radius:999px;min-width:20px;height:20px;padding:0 6px;
+  font-size:12px;font-weight:700;line-height:20px;text-align:center;font-style:normal;display:inline-block;
+  box-shadow:0 1px 4px rgba(11,13,16,.3);
+}
+.conta[hidden]{display:none}
+dialog.menu-dlg{width:min(340px,calc(100vw - 28px));border-radius:18px;overflow:hidden}
+.menu-item{
+  display:flex;align-items:center;gap:14px;width:100%;background:none;border:0;
+  padding:17px 20px;text-align:left;border-bottom:1px solid var(--cinza-linha);
+  font-size:16px;font-weight:600;font-family:var(--display);color:var(--preto);
+}
+.menu-item:hover{background:var(--cinza)}
+.menu-item i{width:38px;height:38px;border-radius:10px;background:var(--azul);color:#fff;display:grid;place-items:center;flex:none}
+.menu-item .conta{margin-left:auto;background:var(--azul);color:#fff;box-shadow:none}
+
+/* ---------- gerenciar caminhão ---------- */
+.painel{background:var(--branco);border:1px solid var(--cinza-linha);border-radius:var(--raio);padding:20px;box-shadow:var(--sombra);margin-top:16px}
+.painel h3{font-family:var(--display);font-size:17px;margin:0 0 4px;font-weight:600}
+.painel p{margin:0 0 14px;font-size:14px;color:var(--cinza-texto)}
+
+/* ---------- dashboard ---------- */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.tile{background:var(--branco);border:1px solid var(--cinza-linha);border-radius:var(--raio);padding:16px;box-shadow:var(--sombra)}
+.tile span{display:block;font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--cinza-texto)}
+.tile b{display:block;font-family:var(--mono);font-size:clamp(17px,4.4vw,23px);font-weight:600;margin-top:7px;letter-spacing:-.02em}
+.tile small{display:block;font-size:12px;color:var(--cinza-texto);margin-top:4px}
+.tile--saldo{background:var(--azul);border-color:var(--azul)}
+.tile--saldo span{color:#A9BDD3}
+.tile--saldo b{color:#fff}
+.tile--saldo small{color:#A9BDD3}
+.tile--negativo b{color:#FF9E93}
+
+.bloco{background:var(--branco);border:1px solid var(--cinza-linha);border-radius:var(--raio);padding:18px;box-shadow:var(--sombra);margin-bottom:16px}
+.bloco__topo{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.bloco h3{font-family:var(--display);font-size:16px;margin:0;font-weight:600}
+.legenda{display:flex;gap:14px;font-size:12.5px;color:var(--cinza-texto);flex-wrap:wrap}
+.legenda i,.ponto{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:6px;vertical-align:0}
+.cor-frete{background:var(--azul)}
+.cor-desp{background:#94A3B4}
+.cor-dia{background:var(--preto)}
+
+.grafico{display:flex;align-items:flex-end;gap:clamp(6px,2.5vw,18px)}
+.gcol{flex:1;min-width:0}
+.gbarras{display:flex;align-items:flex-end;justify-content:center;gap:3px;height:140px}
+.gbarra{width:clamp(9px,3.4vw,20px);border-radius:4px 4px 0 0;background:var(--azul)}
+.gbarra--desp{background:#94A3B4}
+.gmes{text-align:center;font-size:11.5px;color:var(--cinza-texto);margin-top:9px;white-space:nowrap}
+
+.pilha{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--cinza);margin-bottom:10px}
+.pilha i{display:block;height:100%}
+.pilha__serv{background:#94A3B4}
+.pilha__dia{background:var(--azul)}
+.pilha-nums{display:flex;gap:22px;font-size:13.5px;flex-wrap:wrap}
+.pilha-nums b{font-family:var(--mono);font-weight:600}
+
+.cam{border-top:1px solid var(--cinza-linha);padding:14px 0}
+.cam:first-of-type{border-top:0;padding-top:2px}
+.cam__topo{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
+.cam__placa{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.06em}
+.cam__saldo{font-family:var(--mono);font-weight:600;font-size:14.5px}
+.cam__saldo.neg{color:var(--alerta)}
+.cam__barra{height:8px;border-radius:4px;background:var(--cinza);overflow:hidden;margin-bottom:4px}
+.cam__barra i{display:block;height:100%;border-radius:4px}
+.cam__nums{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--cinza-texto)}
+.cam__nums b{font-family:var(--mono);color:var(--preto);font-weight:600}
+
+/* ---------- lixeira ---------- */
+.conta{background:#fff;color:var(--azul);border-radius:999px;padding:0 7px;font-size:12px;font-weight:700;margin-left:7px;line-height:18px;display:inline-block}
+.conta[hidden]{display:none}
+.lixo{display:flex;gap:14px;align-items:flex-start;background:var(--branco);border:1px solid var(--cinza-linha);border-radius:12px;padding:14px 16px;margin-bottom:12px;box-shadow:var(--sombra)}
+.lixo__icone{width:40px;height:40px;border-radius:10px;background:var(--cinza);color:var(--azul);display:grid;place-items:center;flex:none}
+.lixo__txt{flex:1;min-width:0}
+.lixo__txt h3{font-family:var(--display);font-size:16px;margin:0 0 3px;font-weight:600}
+.lixo__txt p{margin:0;font-size:13.5px;color:var(--cinza-texto);word-break:break-word}
+.lixo__valor{font-family:var(--mono);font-weight:600;color:var(--preto)}
+.lixo__quando{font-size:12.5px;color:var(--cinza-texto);margin-top:6px}
+.lixo__acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.lixo__acoes .btn{padding:8px 14px;font-size:14px}
+
+/* ---------- ações da tabela ---------- */
+.acoes-barra{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.acoes-barra .btn{flex:1;justify-content:center;min-width:190px}
+
+/* ---------- importação de CT-e ---------- */
+dialog.largo{width:min(880px,calc(100vw - 24px))}
+.import-lista{max-height:min(56vh,520px);overflow:auto;margin:0 -6px;padding:0 6px}
+.import-linha{border:1px solid var(--cinza-linha);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--branco)}
+.import-linha[data-fora="1"]{opacity:.55}
+.import-topo{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.marcar{display:flex;align-items:center;gap:9px;font-weight:600;font-size:14.5px;min-width:0}
+.marcar input{width:20px;height:20px;accent-color:var(--azul);flex:none}
+.marcar b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw}
+.nota{font-size:12.5px;color:var(--cinza-texto)}
+.nota--alerta{color:var(--alerta);font-weight:600}
+.grade4{display:grid;grid-template-columns:130px 130px 1fr 150px;gap:10px}
+.grade4 .campo{margin:0}
+.grade4 .campo input{padding:9px 11px;font-size:14.5px}
+.grade4 .moeda input{padding-left:34px}
+.grade4 .moeda span{left:11px;font-size:13.5px}
+.link{background:none;border:0;padding:0;color:var(--azul);font-size:12.5px;font-weight:600;text-decoration:underline;text-align:left}
+.carregando{padding:26px 8px;text-align:center;color:var(--cinza-texto);font-size:15px}
+
+/* ---------- visualização da tabela ---------- */
+dialog.folha-dlg[open]{width:min(720px,calc(100vw - 20px));max-height:calc(100vh - 40px);display:flex;flex-direction:column;padding:0}
+.folha-barra{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--cinza-linha)}
+.folha-barra strong{font-family:var(--display);font-size:14.5px;line-height:1.3;min-width:0}
+.folha-barra .btn{padding:9px 16px;font-size:14px;flex:none}
+.folha-area{overflow:auto;background:var(--branco);flex:1;-webkit-overflow-scrolling:touch}
+.folha{background:#fff;margin:0}
+
+.tv-cab{background:var(--azul);color:#fff;padding:15px 16px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.tv-cab b{display:block;font-family:var(--display);font-size:17px;letter-spacing:.06em;font-weight:700}
+.tv-cab small{display:block;font-size:12px;color:#A9BDD3;margin-top:3px}
+.tv-cab i{font-style:normal;font-size:12.5px;color:#A9BDD3;text-align:right;white-space:nowrap}
+table.tv{width:100%;border-collapse:collapse}
+.tv td{padding:12px 14px;border-bottom:1px solid var(--cinza-linha);vertical-align:top}
+.tv tr:last-child td{border-bottom:0}
+.tv-data{font-family:var(--mono);font-size:14px;font-weight:600;white-space:nowrap;width:1%}
+.tv-data small{display:block;color:var(--cinza-texto);font-size:11px;font-weight:500}
+.tv-desc{font-size:14.5px;line-height:1.35;word-break:break-word}
+.tv-desc small{display:block;color:var(--cinza-texto);font-size:12.5px;margin-top:3px}
+.tv-desc small.tv-tag{display:inline-block;width:auto}
+.tv-tag{display:inline-block;background:var(--azul);color:#fff;font-size:10.5px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin:0 0 0 8px;font-family:var(--display)}
+.tv-valor{font-family:var(--mono);font-weight:600;text-align:right;white-space:nowrap;font-size:14.5px;width:1%}
+
+/* ---------- toast ---------- */
+#toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  background:var(--preto);color:#fff;padding:13px 20px;border-radius:999px;font-size:14.5px;font-weight:500;
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:60;max-width:90vw;text-align:center;
+}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.rodape{max-width:1040px;margin:0 auto;padding:0 20px 40px;font-size:12.5px;color:var(--cinza-texto)}
+
+@media (max-width:680px){
+  .tiles{grid-template-columns:1fr 1fr}
+  .tiles .tile--saldo{grid-column:span 2}
+  .marca__nome{font-size:16px}
+  .marca__nome small{display:none}
+  .lixo__acoes .btn{flex:1;justify-content:center}
+  dialog.folha-dlg[open]{inset:0;width:100%;max-width:none;height:100dvh;max-height:none;border-radius:0}
+  .grade4{grid-template-columns:1fr 1fr}
+  .grade4 .campo:nth-child(3),.grade4 .campo:nth-child(4){grid-column:span 2}
+  .acoes-barra .btn{min-width:0}
+  .folha-barra .btn{flex:1;justify-content:center}
+  .area{padding:18px 14px 48px}
+  .trilha{padding:12px 14px 0}
+  .rodape{padding:0 14px 32px}
+  .titulo{font-size:22px}
+  .tabela thead{display:none}
+  .tabela,.tabela tbody,.tabela tr,.tabela td{display:block;width:100%}
+  .tabela tr{border-bottom:1px solid var(--cinza-linha);padding:6px 0}
+  .tabela tbody tr:nth-child(even) td,.tabela tbody tr:hover td{background:transparent}
+  .tabela td{border:0;padding:7px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+  .tabela td::before{content:attr(data-rot);font-size:13px;font-weight:600;color:var(--cinza-texto);flex:none}
+  .tabela td.acoes{width:auto;justify-content:flex-end;padding-top:4px;padding-bottom:12px}
+  .tabela td.acoes::before{content:""}
+  .dinheiro{text-align:right}
+  .ferramentas .btn{flex:1;justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+@media print{
+  .topo,.trilha,.ferramentas,.acoes,.aviso,.rodape,#toast{display:none!important}
+}
+</style>
+</head>
+<body>
+<header class="topo">
+  <button class="marca" id="irInicio" aria-label="Voltar para a tela inicial">
+    <span class="marca__sigla">RK</span>
+    <span class="marca__nome">RK Transportes<small>Controle de viagens e despesas</small></span>
+  </button>
+  <div class="topo__acoes">
+    <button class="menu-botao" id="btnMenu" aria-label="Abrir o menu">
+      <span></span><span></span><span></span>
+      <i class="conta" id="contaLixeira" hidden></i>
+    </button>
+  </div>
+</header>
+
+<nav class="trilha" id="trilha"></nav>
+<main class="area" id="tela"></main>
+<footer class="rodape" id="rodape"></footer>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="dlgCaminhao">
+  <form method="dialog" id="formCaminhao">
+    <div class="dlg__topo"><h2 id="tituloCaminhao">Cadastrar caminhão</h2><p>Identifique o veículo pela placa.</p></div>
+    <div class="dlg__corpo">
+      <p class="erro" id="erroCaminhao"></p>
+      <div class="campo">
+        <label for="inPlaca">Placa</label>
+        <input id="inPlaca" name="placa" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC1D23" maxlength="10" required>
+        <p class="dica">Digite como está no documento do veículo.</p>
+      </div>
+      <div class="campo">
+        <label for="inApelido">Identificação (opcional)</label>
+        <input id="inApelido" name="apelido" autocomplete="off" placeholder="Ex.: Carreta Volvo, Scania do João" maxlength="40">
+      </div>
+    </div>
+    <div class="dlg__pe">
+      <button type="button" class="btn btn--neutro" data-fechar>Cancelar</button>
+      <button type="submit" class="btn" id="salvarCaminhao">Salvar caminhão</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgRegistro">
+  <form method="dialog" id="formRegistro">
+    <div class="dlg__topo"><h2 id="tituloRegistro">Adicionar viagem</h2><p id="subRegistro"></p></div>
+    <div class="dlg__corpo" id="corpoRegistro"></div>
+    <div class="dlg__pe">
+      <button type="button" class="btn btn--neutro" data-fechar>Cancelar</button>
+      <button type="submit" class="btn" id="salvarRegistro">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgConfirma">
+  <div class="dlg__topo"><h2 id="tituloConfirma">Excluir</h2><p id="textoConfirma"></p></div>
+  <div class="dlg__pe">
+    <button type="button" class="btn btn--neutro" data-fechar>Cancelar</button>
+    <button type="button" class="btn btn--perigo" id="confirmaOk">Excluir</button>
+  </div>
+</dialog>
+
+<dialog id="dlgBackup">
+  <div class="dlg__topo"><h2>Backup dos dados</h2><p>Os registros ficam salvos neste navegador, neste aparelho.</p></div>
+  <div class="dlg__corpo">
+    <p style="margin:0 0 14px;font-size:14.5px;color:var(--cinza-texto)">
+      Baixe uma cópia de segurança de vez em quando. Com esse arquivo você recupera tudo se trocar de aparelho,
+      limpar o navegador ou precisar levar os dados para outro computador.
+    </p>
+    <div class="ferramentas" style="margin:0">
+      <button class="btn" id="btnBaixarBackup">Baixar cópia de segurança</button>
+      <button class="btn btn--claro" id="btnRestaurar">Restaurar de um arquivo</button>
+    </div>
+    <input type="file" id="arquivoBackup" accept="application/json,.json" hidden>
+  </div>
+  <div class="dlg__pe"><button type="button" class="btn btn--neutro" data-fechar>Fechar</button></div>
+</dialog>
+
+<dialog id="dlgMenu" class="menu-dlg">
+  <button type="button" class="menu-item" data-menu="painel"><i id="icPainel"></i>Dashboard</button>
+  <button type="button" class="menu-item" data-menu="lixeira"><i id="icLixo"></i>Lixeira<span class="conta" id="contaMenu" hidden></span></button>
+  <button type="button" class="menu-item" data-menu="backup"><i id="icBackup"></i>Backup</button>
+  <button type="button" class="menu-item" data-fechar style="justify-content:center;color:var(--cinza-texto);font-weight:500">Fechar</button>
+</dialog>
+
+<dialog id="dlgImportar" class="largo">
+  <div class="dlg__topo">
+    <h2>Conferir antes de salvar</h2>
+    <p id="subImportar">Confira o que foi lido do documento. Você pode corrigir qualquer campo aqui.</p>
+  </div>
+  <div class="dlg__corpo"><div class="import-lista" id="corpoImportar"></div></div>
+  <div class="dlg__pe">
+    <button type="button" class="btn btn--neutro" data-fechar>Cancelar</button>
+    <button type="button" class="btn" id="confirmarImportacao">Salvar viagens</button>
+  </div>
+</dialog>
+
+<dialog id="dlgTabela" class="folha-dlg">
+  <div class="folha-barra">
+    <strong id="tituloFolha">Tabela</strong>
+    <button type="button" class="btn btn--neutro" data-fechar>Fechar</button>
+  </div>
+  <div class="folha-area"><div class="folha" id="folha"></div></div>
+</dialog>
+
+<input type="file" id="arquivoCTe" multiple hidden>
+
+<script>
+"use strict";
+
+/* ==========================================================
+   RK TRANSPORTES — controle de viagens e despesas por caminhão
+   Dados salvos no navegador (localStorage) deste aparelho.
+   ========================================================== */
+
+const CHAVE = "rk_transportes_v1";
+const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const hoje = new Date();
+
+let dados = carregar();
+let estado = {
+  vista: "inicio",
+  caminhaoId: null,
+  tipo: "viagem",
+  ano: hoje.getFullYear(),
+  mes: hoje.getMonth() + 1
+};
+
+/* ---------------- armazenamento ---------------- */
+function carregar(){
+  try{
+    const bruto = localStorage.getItem(CHAVE);
+    if(bruto){
+      const d = JSON.parse(bruto);
+      if(d && Array.isArray(d.caminhoes) && Array.isArray(d.registros)){
+        if(!Array.isArray(d.lixeira)) d.lixeira = [];
+        return d;
+      }
+    }
+  }catch(e){}
+  return { versao:1, caminhoes:[], registros:[], lixeira:[] };
+}
+function salvar(){
+  try{
+    localStorage.setItem(CHAVE, JSON.stringify(dados));
+  }catch(e){
+    alert("Não foi possível salvar neste navegador. Se estiver em uma janela anônima, abra o programa em uma janela normal.");
+  }
+}
+const novoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+/* ---------------- formatação ---------------- */
+const brl = n => (Number(n)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const numero = n => (Number(n)||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+function dataBR(iso){
+  if(!iso) return "";
+  const [a,m,d] = iso.split("-");
+  return `${d}/${m}/${a}`;
+}
+function periodoTexto(mes,ano){ return `${MESES[mes-1]} de ${ano}`; }
+function maiuscula(t){ return t.charAt(0).toUpperCase() + t.slice(1); }
+const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+function esc(t){
+  return String(t==null?"":t).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function dinheiroParaNumero(txt){
+  if(txt==null) return 0;
+  let t = String(txt).replace(/[^\d,.-]/g,"");
+  if(t.includes(",")) t = t.replace(/\./g,"").replace(",",".");
+  return Math.round((parseFloat(t)||0)*100)/100;
+}
+
+/* ---------------- consultas ---------------- */
+const caminhaoAtual = () => dados.caminhoes.find(c => c.id === estado.caminhaoId) || null;
+
+function registros(caminhaoId, tipo, ano, mes){
+  const prefixo = `${ano}-${String(mes).padStart(2,"0")}`;
+  return dados.registros
+    .filter(r => r.caminhaoId===caminhaoId && r.tipo===tipo && String(r.data||"").startsWith(prefixo))
+    .sort((a,b) => a.data===b.data ? (a.criadoEm||0)-(b.criadoEm||0) : a.data.localeCompare(b.data));
+}
+function totaisDespesas(lista){
+  const diarias = lista.filter(r=>r.diaria).reduce((s,r)=>s+(+r.valor||0),0);
+  const servicos = lista.filter(r=>!r.diaria).reduce((s,r)=>s+(+r.valor||0),0);
+  return { servicos, diarias, geral: servicos + diarias };
+}
+const totalFretes = lista => lista.reduce((s,r)=>s+(+r.valor||0),0);
+
+function anosDisponiveis(){
+  const anos = new Set([hoje.getFullYear(), estado.ano]);
+  for(let i=-2;i<=1;i++) anos.add(hoje.getFullYear()+i);
+  dados.registros.forEach(r => { const a = parseInt(String(r.data||"").slice(0,4),10); if(a) anos.add(a); });
+  return [...anos].sort((a,b)=>a-b);
+}
+function contar(caminhaoId, tipo){
+  return dados.registros.filter(r => r.caminhaoId===caminhaoId && r.tipo===tipo).length;
+}
+
+/* ---------------- ícones ---------------- */
+const ICONES = {
+  viagem: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6h11v9H1z"/><path d="M12 9h4.5l3.5 3.5V15H12z"/><circle cx="5.5" cy="17.5" r="2"/><circle cx="16.5" cy="17.5" r="2"/></svg>',
+  despesa: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15l-2.5-1.5L14 21l-2.5-1.5L9 21l-2.5-1.5L4 21V4z"/><path d="M8 8h7M8 12h7M8 16h4"/></svg>',
+  editar: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  excluir: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',
+  seta: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  painel: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  backup: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 21h16"/></svg>',
+  caminhao: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6h11v9H1z"/><path d="M12 9h4.5l3.5 3.5V15H12z"/><circle cx="5.5" cy="17.5" r="2"/><circle cx="16.5" cy="17.5" r="2"/></svg>',
+  clipe: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 1 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>',
+  papel: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>'
+};
+
+/* ---------------- navegação ---------------- */
+function ir(vista, extras){
+  Object.assign(estado, {vista}, extras||{});
+  window.scrollTo({top:0,behavior:"instant"});
+  render();
+}
+
+function render(){
+  const trilha = document.getElementById("trilha");
+  const tela = document.getElementById("tela");
+  const rodape = document.getElementById("rodape");
+  const c = caminhaoAtual();
+
+  if(!["inicio","lixeira","painel"].includes(estado.vista) && !c) estado.vista = "inicio";
+
+  [document.getElementById("contaLixeira"), document.getElementById("contaMenu")].forEach(el => {
+    el.textContent = dados.lixeira.length;
+    el.hidden = dados.lixeira.length === 0;
+  });
+
+  if(estado.vista === "painel"){
+    trilha.innerHTML = `<button class="voltar" data-acao="inicio">${ICONES.seta} Caminhões</button>
+      <span class="migalha">Dashboard</span>`;
+    tela.innerHTML = telaPainel();
+  }else if(estado.vista === "lixeira"){
+    trilha.innerHTML = `<button class="voltar" data-acao="inicio">${ICONES.seta} Caminhões</button>
+      <span class="migalha">Lixeira</span>`;
+    tela.innerHTML = telaLixeira();
+  }else if(estado.vista === "inicio"){
+    trilha.innerHTML = "";
+    tela.innerHTML = telaInicio();
+  }else if(estado.vista === "caminhao"){
+    trilha.innerHTML = `<button class="voltar" data-acao="inicio">${ICONES.seta} Caminhões</button>
+      <span class="migalha">Caminhão <b>${esc(c.placa)}</b></span>`;
+    tela.innerHTML = telaCaminhao(c);
+  }else{
+    const rotulo = estado.tipo === "viagem" ? "Viagens" : "Despesas";
+    trilha.innerHTML = `<button class="voltar" data-acao="caminhao">${ICONES.seta} ${esc(c.placa)}</button>
+      <span class="migalha"><b>${esc(c.placa)}</b> · ${rotulo} · ${maiuscula(periodoTexto(estado.mes,estado.ano))}</span>`;
+    tela.innerHTML = telaTabela(c);
+  }
+
+  rodape.innerHTML = "";
+}
+
+/* ---------------- tela 1: caminhões ---------------- */
+function telaInicio(){
+  const cartoes = dados.caminhoes.map(c => `
+    <button class="placa" data-acao="abrirCaminhao" data-id="${c.id}">
+      <span class="placa__faixa"><span>BRASIL</span><span>RK</span></span>
+      <span class="placa__num">${esc(c.placa)}</span>
+      <span class="placa__pe">
+        <span>${c.apelido ? esc(c.apelido) : "Ver viagens e despesas"}</span>
+        <span>${contar(c.id,"viagem")}V · ${contar(c.id,"despesa")}D</span>
+      </span>
+    </button>`).join("");
+
+  const vazio = `
+    <div class="cartao">
+      <div class="vazio">
+        <strong>Nenhum caminhão cadastrado</strong>
+        Cadastre a placa do primeiro caminhão para começar a lançar viagens e despesas.
+        <div class="ferramentas" style="justify-content:center;margin-top:18px">
+          <button class="btn" data-acao="novoCaminhao">Cadastrar caminhão</button>
+        </div>
+      </div>
+    </div>`;
+
+  return `
+    <div class="linha-titulo">
+      <div>
+        <h1 class="titulo">Escolha o caminhão</h1>
+      </div>
+      ${dados.caminhoes.length ? '<button class="btn" data-acao="novoCaminhao">Cadastrar caminhão</button>' : ""}
+    </div>
+    ${dados.caminhoes.length ? `<div class="placas">${cartoes}
+      <button class="placa placa--nova" data-acao="novoCaminhao">+ Cadastrar caminhão</button></div>` : vazio}
+  `;
+}
+
+/* ---------------- tela 2: viagens ou despesas ---------------- */
+function telaCaminhao(c){
+  return `
+    <div class="linha-titulo">
+      <div>
+        <h1 class="titulo">Caminhão ${esc(c.placa)}</h1>
+        ${c.apelido ? `<p class="sub">${esc(c.apelido)}</p>` : ""}
+      </div>
+    </div>
+    <div class="escolhas">
+      <button class="escolha" data-acao="abrirTabela" data-tipo="viagem">
+        <span class="escolha__icone">${ICONES.viagem}</span>
+        <span><h3>Viagens</h3></span>
+      </button>
+      <button class="escolha" data-acao="abrirTabela" data-tipo="despesa">
+        <span class="escolha__icone">${ICONES.despesa}</span>
+        <span><h3>Despesas</h3></span>
+      </button>
+    </div>
+    <div class="painel">
+      <h3>Gerenciar este caminhão</h3>
+      <div class="ferramentas">
+        <button class="btn btn--claro" data-acao="editarCaminhao">Editar placa</button>
+        <button class="btn btn--neutro" data-acao="excluirCaminhao">Excluir caminhão</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------------- dashboard ---------------- */
+function totaisPeriodo(ano, mes, caminhaoId){
+  const prefixo = `${ano}-${String(mes).padStart(2,"0")}`;
+  let fretes = 0, diarias = 0, servicos = 0, viagens = 0;
+  dados.registros.forEach(r => {
+    if(!String(r.data||"").startsWith(prefixo)) return;
+    if(caminhaoId && r.caminhaoId !== caminhaoId) return;
+    if(r.tipo === "viagem"){ fretes += +r.valor || 0; viagens++; }
+    else if(r.diaria) diarias += +r.valor || 0;
+    else servicos += +r.valor || 0;
+  });
+  const despesas = diarias + servicos;
+  return { fretes, diarias, servicos, despesas, saldo: fretes - despesas, viagens };
+}
+
+function barraMes(){
+  const anos = anosDisponiveis();
+  return `
+    <div class="mes-barra">
+      <button class="mes-seta" data-acao="mesAnterior" aria-label="Mês anterior">‹</button>
+      <div class="mes-campos">
+        <select id="selMes" aria-label="Mês">
+          ${MESES.map((m,i)=>`<option value="${i+1}" ${i+1===estado.mes?"selected":""}>${maiuscula(m)}</option>`).join("")}
+        </select>
+        <select id="selAno" aria-label="Ano">
+          ${anos.map(a=>`<option value="${a}" ${a===estado.ano?"selected":""}>${a}</option>`).join("")}
+        </select>
+      </div>
+      <button class="mes-seta" data-acao="mesSeguinte" aria-label="Próximo mês">›</button>
+    </div>`;
+}
+
+function telaPainel(){
+  if(!dados.registros.length){
+    return `
+      <div class="linha-titulo"><div><h1 class="titulo">Dashboard</h1></div></div>
+      <div class="cartao"><div class="vazio">
+        <strong>Nada lançado ainda</strong>
+        Assim que você registrar viagens e despesas, os números e os gráficos aparecem aqui.
+      </div></div>`;
+  }
+
+  const t = totaisPeriodo(estado.ano, estado.mes);
+
+  /* seis meses até o mês escolhido */
+  const serie = [];
+  for(let i = 5; i >= 0; i--){
+    let m = estado.mes - i, a = estado.ano;
+    while(m < 1){ m += 12; a--; }
+    serie.push(Object.assign({ m, a }, totaisPeriodo(a, m)));
+  }
+  const teto = Math.max(1, ...serie.map(x => Math.max(x.fretes, x.despesas)));
+  const altura = v => v > 0 ? Math.max(4, (v / teto) * 100) : 0;
+
+  const grafico = serie.map(x => `
+    <div class="gcol">
+      <div class="gbarras">
+        <div class="gbarra" style="height:${altura(x.fretes).toFixed(1)}%" title="Fretes: ${brl(x.fretes)}"></div>
+        <div class="gbarra gbarra--desp" style="height:${altura(x.despesas).toFixed(1)}%" title="Despesas: ${brl(x.despesas)}"></div>
+      </div>
+      <div class="gmes">${MESES[x.m-1].slice(0,3)}/${String(x.a).slice(2)}</div>
+    </div>`).join("");
+
+  const pctServ = t.despesas ? (t.servicos / t.despesas) * 100 : 0;
+  const pctDia  = t.despesas ? (t.diarias / t.despesas) * 100 : 0;
+
+  const porCaminhao = dados.caminhoes
+    .map(c => Object.assign({ c }, totaisPeriodo(estado.ano, estado.mes, c.id)))
+    .filter(x => x.fretes || x.despesas)
+    .sort((a,b) => b.saldo - a.saldo);
+  const tetoCam = Math.max(1, ...porCaminhao.map(x => Math.max(x.fretes, x.despesas)));
+
+  const listaCaminhoes = porCaminhao.length ? porCaminhao.map(x => `
+    <div class="cam">
+      <div class="cam__topo">
+        <span class="cam__placa">${esc(x.c.placa)}</span>
+        <span class="cam__saldo ${x.saldo < 0 ? "neg" : ""}">${brl(x.saldo)}</span>
+      </div>
+      <div class="cam__barra"><i class="cor-frete" style="width:${(x.fretes/tetoCam*100).toFixed(1)}%"></i></div>
+      <div class="cam__barra"><i class="cor-desp" style="width:${(x.despesas/tetoCam*100).toFixed(1)}%"></i></div>
+      <div class="cam__nums">
+        <span>Fretes <b>${brl(x.fretes)}</b></span>
+        <span>Despesas <b>${brl(x.despesas)}</b></span>
+      </div>
+    </div>`).join("")
+    : `<p style="margin:0;color:var(--cinza-texto);font-size:14px">Nenhum lançamento neste mês.</p>`;
+
+  return `
+    <div class="linha-titulo"><div><h1 class="titulo">Dashboard</h1></div></div>
+    ${barraMes()}
+
+    <div class="tiles">
+      <div class="tile">
+        <span>Fretes</span><b>${brl(t.fretes)}</b>
+        <small>${plural(t.viagens,"viagem","viagens")}</small>
+      </div>
+      <div class="tile">
+        <span>Despesas</span><b>${brl(t.despesas)}</b>
+        <small>com as diárias</small>
+      </div>
+      <div class="tile tile--saldo ${t.saldo < 0 ? "tile--negativo" : ""}">
+        <span>Saldo</span><b>${brl(t.saldo)}</b>
+        <small>fretes menos despesas</small>
+      </div>
+    </div>
+
+    <div class="bloco">
+      <div class="bloco__topo">
+        <h3>Últimos 6 meses</h3>
+        <div class="legenda">
+          <span><i class="cor-frete"></i>Fretes</span>
+          <span><i class="cor-desp"></i>Despesas</span>
+        </div>
+      </div>
+      <div class="grafico">${grafico}</div>
+    </div>
+
+    <div class="bloco">
+      <div class="bloco__topo">
+        <h3>Despesas de ${periodoTexto(estado.mes, estado.ano)}</h3>
+      </div>
+      <div class="pilha">
+        <i class="pilha__serv" style="width:${pctServ.toFixed(1)}%"></i>
+        <i class="pilha__dia" style="width:${pctDia.toFixed(1)}%"></i>
+      </div>
+      <div class="pilha-nums">
+        <span><i class="ponto cor-desp"></i>Serviços <b>${brl(t.servicos)}</b></span>
+        <span><i class="ponto cor-frete"></i>Diárias <b>${brl(t.diarias)}</b></span>
+      </div>
+    </div>
+
+    <div class="bloco">
+      <div class="bloco__topo"><h3>Por caminhão</h3></div>
+      ${listaCaminhoes}
+    </div>`;
+}
+
+/* ---------------- lixeira ---------------- */
+function descricaoLixo(l){
+  const r = l.registro;
+  if(l.tipo === "caminhao"){
+    const v = (l.filhos||[]).filter(f => f.tipo === "viagem").length;
+    const d = (l.filhos||[]).filter(f => f.tipo === "despesa").length;
+    return { icone:ICONES.caminhao, titulo:`Caminhão ${esc(r.placa)}`,
+             detalhe: (v || d) ? `${plural(v,"viagem","viagens")} e ${plural(d,"despesa","despesas")} foram junto` : "Sem registros lançados", valor:"" };
+  }
+  if(l.tipo === "viagem"){
+    return { icone:ICONES.papel, titulo:`Viagem · ${esc(l.placa||"")}`,
+             detalhe: `${dataBR(r.data)}${r.cte ? " · CT-e " + esc(r.cte) : ""}${r.local ? " · " + esc(r.local) : ""}`,
+             valor: brl(r.valor) };
+  }
+  return { icone:ICONES.papel, titulo:`Despesa · ${esc(l.placa||"")}`,
+           detalhe: `${dataBR(r.data)} · ${esc(r.servico||"")}${r.diaria ? " (diária)" : ""}`,
+           valor: brl(r.valor) };
+}
+
+function telaLixeira(){
+  if(!dados.lixeira.length){
+    return `
+      <div class="linha-titulo"><div>
+        <h1 class="titulo">Lixeira</h1>
+        <p class="sub">O que você excluir fica guardado aqui.</p>
+      </div></div>
+      <div class="cartao"><div class="vazio">
+        <strong>A lixeira está vazia</strong>
+        Quando você excluir um caminhão, uma viagem ou uma despesa, o registro fica aqui
+        até você restaurar ou apagar de vez.
+      </div></div>`;
+  }
+
+  const itens = dados.lixeira.map(l => {
+    const d = descricaoLixo(l);
+    const quando = new Date(l.excluidoEm);
+    return `
+      <div class="lixo">
+        <span class="lixo__icone">${d.icone}</span>
+        <div class="lixo__txt">
+          <h3>${d.titulo}</h3>
+          <p>${d.detalhe}${d.valor ? ` · <span class="lixo__valor">${d.valor}</span>` : ""}</p>
+          <p class="lixo__quando">Excluído em ${quando.toLocaleDateString("pt-BR")} às ${quando.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</p>
+          <div class="lixo__acoes">
+            <button class="btn btn--claro" data-acao="restaurarLixo" data-id="${l.id}">Restaurar</button>
+            <button class="btn btn--neutro" data-acao="apagarLixo" data-id="${l.id}">Excluir definitivamente</button>
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+
+  return `
+    <div class="linha-titulo">
+      <div>
+        <h1 class="titulo">Lixeira</h1>
+        <p class="sub">${dados.lixeira.length} ${dados.lixeira.length === 1 ? "item guardado" : "itens guardados"}. Nada some sozinho daqui.</p>
+      </div>
+      <button class="btn btn--neutro" data-acao="esvaziarLixeira">Esvaziar lixeira</button>
+    </div>
+    ${itens}`;
+}
+
+/* ---------------- tela 3: tabela do mês ---------------- */
+function telaTabela(c){
+  const ehViagem = estado.tipo === "viagem";
+  const lista = registros(c.id, estado.tipo, estado.ano, estado.mes);
+
+  const barra = barraMes() + `
+    <div class="acoes-barra">
+      <button class="btn" data-acao="novoRegistro">${ehViagem ? "Adicionar viagem" : "Adicionar despesa"}</button>
+      ${ehViagem ? `<button class="btn btn--claro" data-acao="importarCTe">${ICONES.clipe} Enviar CT-e</button>` : ""}
+    </div>
+`;
+
+  let corpo;
+  if(!lista.length){
+    corpo = `<div class="cartao"><div class="vazio">
+      <strong>Nada lançado em ${periodoTexto(estado.mes,estado.ano)}</strong>
+      ${ehViagem ? "Adicione a primeira viagem deste mês." : "Adicione a primeira despesa deste mês."}
+      Os outros meses continuam guardados.
+    </div></div>`;
+  }else if(ehViagem){
+    corpo = `<div class="cartao">
+      <table class="tabela">
+        <thead><tr><th>Data</th><th>Nº do CT-e</th><th>Local</th><th class="dinheiro">Valor do frete</th><th class="acoes"></th></tr></thead>
+        <tbody>
+          ${lista.map(r=>`<tr>
+            <td data-rot="Data" class="num">${dataBR(r.data)}</td>
+            <td data-rot="Nº do CT-e" class="num">${esc(r.cte||"—")}</td>
+            <td data-rot="Local">${esc(r.local||"—")}</td>
+            <td data-rot="Valor do frete" class="dinheiro">${brl(r.valor)}</td>
+            <td class="acoes">
+              <button class="icone-btn" data-acao="editarRegistro" data-id="${r.id}" aria-label="Editar viagem">${ICONES.editar}</button>
+              <button class="icone-btn icone-btn--perigo" data-acao="excluirRegistro" data-id="${r.id}" aria-label="Excluir viagem">${ICONES.excluir}</button>
+            </td></tr>`).join("")}
+        </tbody>
+      </table>
+      <div class="totais">
+        <div class="total-linha"><span>${lista.length === 1 ? "Viagem lançada" : "Viagens lançadas"} em ${periodoTexto(estado.mes,estado.ano)}</span><b>${lista.length}</b></div>
+        <div class="total-linha total-linha--forte"><span>Total de fretes</span><b>${brl(totalFretes(lista))}</b></div>
+      </div>
+    </div>`;
+  }else{
+    const t = totaisDespesas(lista);
+    corpo = `<div class="cartao">
+      <table class="tabela">
+        <thead><tr><th>Data</th><th>Serviço</th><th class="dinheiro">Valor</th><th class="acoes"></th></tr></thead>
+        <tbody>
+          ${lista.map(r=>`<tr>
+            <td data-rot="Data" class="num">${dataBR(r.data)}</td>
+            <td data-rot="Serviço">${esc(r.servico||"—")}${r.diaria?'<span class="etiqueta">Diária</span>':""}</td>
+            <td data-rot="Valor" class="dinheiro">${brl(r.valor)}</td>
+            <td class="acoes">
+              <button class="icone-btn" data-acao="editarRegistro" data-id="${r.id}" aria-label="Editar despesa">${ICONES.editar}</button>
+              <button class="icone-btn icone-btn--perigo" data-acao="excluirRegistro" data-id="${r.id}" aria-label="Excluir despesa">${ICONES.excluir}</button>
+            </td></tr>`).join("")}
+        </tbody>
+      </table>
+      <div class="totais">
+        <div class="total-linha"><span>Total dos serviços (sem diárias)</span><b>${brl(t.servicos)}</b></div>
+        <div class="total-linha"><span>Total de diárias</span><b>${brl(t.diarias)}</b></div>
+        <div class="total-linha total-linha--forte"><span>Total geral (serviços + diárias)</span><b>${brl(t.geral)}</b></div>
+      </div>
+    </div>`;
+  }
+
+  return `
+    <div class="linha-titulo">
+      <div>
+        <h1 class="titulo">${ehViagem ? "Viagens" : "Despesas"} · ${esc(c.placa)}</h1>
+        <p class="sub">${maiuscula(periodoTexto(estado.mes,estado.ano))}</p>
+      </div>
+    </div>
+    ${barra}
+    ${corpo}
+    <div class="ferramentas">
+      <button class="btn btn--claro" data-acao="verTabela" ${lista.length?"":"disabled"}>Ver tabela</button>
+      <button class="btn btn--claro" data-acao="exportarPDF" ${lista.length?"":"disabled"}>Exportar PDF</button>
+      <button class="btn btn--claro" data-acao="exportarExcel" ${lista.length?"":"disabled"}>Baixar Excel (.xlsx)</button>
+    </div>
+  `;
+}
+
+/* ---------------- avisos rápidos ---------------- */
+let tempoToast;
+function aviso(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("on");
+  clearTimeout(tempoToast);
+  tempoToast = setTimeout(()=>t.classList.remove("on"), 2600);
+}
+
+/* ---------------- diálogos ---------------- */
+const dlgCaminhao = document.getElementById("dlgCaminhao");
+const dlgRegistro = document.getElementById("dlgRegistro");
+const dlgConfirma = document.getElementById("dlgConfirma");
+const dlgBackup  = document.getElementById("dlgBackup");
+
+document.querySelectorAll("[data-fechar]").forEach(b =>
+  b.addEventListener("click", () => b.closest("dialog").close()));
+
+let confirmarAcao = null;
+function perguntar(titulo, texto, rotulo, acao){
+  document.getElementById("tituloConfirma").textContent = titulo;
+  document.getElementById("textoConfirma").textContent = texto;
+  document.getElementById("confirmaOk").textContent = rotulo;
+  confirmarAcao = acao;
+  dlgConfirma.showModal();
+}
+document.getElementById("confirmaOk").addEventListener("click", () => {
+  dlgConfirma.close();
+  if(confirmarAcao) confirmarAcao();
+  confirmarAcao = null;
+});
+
+/* ---------------- cadastro de caminhão ---------------- */
+let caminhaoEmEdicao = null;
+function abrirFormCaminhao(c){
+  caminhaoEmEdicao = c || null;
+  document.getElementById("tituloCaminhao").textContent = c ? "Editar caminhão" : "Cadastrar caminhão";
+  document.getElementById("inPlaca").value = c ? c.placa : "";
+  document.getElementById("inApelido").value = c && c.apelido ? c.apelido : "";
+  document.getElementById("erroCaminhao").classList.remove("on");
+  dlgCaminhao.showModal();
+  setTimeout(()=>document.getElementById("inPlaca").focus(),50);
+}
+document.getElementById("inPlaca").addEventListener("input", e => {
+  e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g,"");
+});
+document.getElementById("formCaminhao").addEventListener("submit", e => {
+  const placa = document.getElementById("inPlaca").value.trim();
+  const apelido = document.getElementById("inApelido").value.trim();
+  const erro = document.getElementById("erroCaminhao");
+  if(placa.length < 5){
+    e.preventDefault(); erro.textContent = "Digite a placa completa."; erro.classList.add("on"); return;
+  }
+  const repetida = dados.caminhoes.some(c => c.placa === placa && (!caminhaoEmEdicao || c.id !== caminhaoEmEdicao.id));
+  if(repetida){
+    e.preventDefault(); erro.textContent = "Esta placa já está cadastrada."; erro.classList.add("on"); return;
+  }
+  if(caminhaoEmEdicao){
+    caminhaoEmEdicao.placa = placa; caminhaoEmEdicao.apelido = apelido;
+    aviso("Caminhão atualizado.");
+  }else{
+    dados.caminhoes.push({ id:novoId(), placa, apelido });
+    aviso("Caminhão cadastrado.");
+  }
+  salvar(); render();
+});
+
+/* ---------------- máscara de dinheiro ---------------- */
+function mascaraMoeda(campo){
+  campo.addEventListener("input", () => {
+    let d = campo.value.replace(/\D/g,"").replace(/^0+/,"");
+    if(!d){ campo.value = ""; return; }
+    while(d.length < 3) d = "0" + d;
+    campo.value = Number(d.slice(0,-2)).toLocaleString("pt-BR") + "," + d.slice(-2);
+  });
+}
+
+/* ---------------- lançamento de viagem / despesa ---------------- */
+let registroEmEdicao = null;
+let ehDiaria = false;
+
+function dataPadrao(){
+  const mesmoMes = estado.ano === hoje.getFullYear() && estado.mes === hoje.getMonth()+1;
+  if(mesmoMes) return hoje.toISOString().slice(0,10);
+  return `${estado.ano}-${String(estado.mes).padStart(2,"0")}-01`;
+}
+
+function abrirFormRegistro(r){
+  registroEmEdicao = r || null;
+  const ehViagem = estado.tipo === "viagem";
+  ehDiaria = r ? !!r.diaria : false;
+
+  document.getElementById("tituloRegistro").textContent =
+    (r ? "Editar " : "Adicionar ") + (ehViagem ? "viagem" : "despesa");
+  document.getElementById("subRegistro").textContent =
+    `${caminhaoAtual().placa} · ${periodoTexto(estado.mes, estado.ano)}`;
+
+  const data = r ? r.data : dataPadrao();
+  const valor = r ? numero(r.valor) : "";
+
+  document.getElementById("corpoRegistro").innerHTML = ehViagem ? `
+    <p class="erro" id="erroRegistro"></p>
+    ${r && r.anexo ? `<p class="dica" style="margin:-4px 0 14px">Preenchido a partir de <b>${esc(r.anexo)}</b>.</p>` : ""}
+    <div class="campo"><label for="inData">Data da viagem</label><input type="date" id="inData" value="${data}" required></div>
+    <div class="campo"><label for="inCte">Nº do CT-e</label><input id="inCte" inputmode="numeric" autocomplete="off" placeholder="Ex.: 12345" value="${r?esc(r.cte||""):""}"></div>
+    <div class="campo"><label for="inLocal">Local</label><input id="inLocal" autocomplete="off" placeholder="Ex.: Ribeirão Preto / SP" value="${r?esc(r.local||""):""}"></div>
+    <div class="campo"><label for="inValor">Valor do frete</label>
+      <div class="moeda"><span>R$</span><input id="inValor" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${valor}"></div>
+      <p class="dica">Valor recebido pela viagem, em reais.</p>
+    </div>` : `
+    <p class="erro" id="erroRegistro"></p>
+    <div class="campo"><label for="inData">Data da despesa</label><input type="date" id="inData" value="${data}" required></div>
+    <div class="campo"><label>Tipo</label>
+      <div class="seletor" id="seletorTipo">
+        <button type="button" data-diaria="0" aria-pressed="${!ehDiaria}">Serviço</button>
+        <button type="button" data-diaria="1" aria-pressed="${ehDiaria}">Diária</button>
+      </div>
+      <p class="dica">As diárias entram somadas à parte no fechamento do mês.</p>
+    </div>
+    <div class="campo"><label for="inServico">Serviço</label>
+      <input id="inServico" autocomplete="off" placeholder="Ex.: Troca de óleo" value="${r?esc(r.servico||""):""}">
+    </div>
+    <div class="campo"><label for="inValor">Valor</label>
+      <div class="moeda"><span>R$</span><input id="inValor" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${valor}"></div>
+    </div>`;
+
+  mascaraMoeda(document.getElementById("inValor"));
+
+  const seletor = document.getElementById("seletorTipo");
+  if(seletor){
+    seletor.addEventListener("click", e => {
+      const b = e.target.closest("button"); if(!b) return;
+      ehDiaria = b.dataset.diaria === "1";
+      seletor.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+      const s = document.getElementById("inServico");
+      if(ehDiaria && !s.value.trim()) s.value = "Diárias";
+      if(!ehDiaria && s.value.trim().toLowerCase() === "diárias") s.value = "";
+    });
+  }
+
+  dlgRegistro.showModal();
+  setTimeout(()=>document.getElementById("inData").focus(),50);
+}
+
+document.getElementById("formRegistro").addEventListener("submit", e => {
+  const ehViagem = estado.tipo === "viagem";
+  const erro = document.getElementById("erroRegistro");
+  const data = document.getElementById("inData").value;
+  const valor = dinheiroParaNumero(document.getElementById("inValor").value);
+  const falhar = msg => { e.preventDefault(); erro.textContent = msg; erro.classList.add("on"); };
+
+  if(!data) return falhar("Informe a data.");
+  if(!(valor > 0)) return falhar("Informe um valor maior que zero.");
+
+  const base = { data, valor };
+  if(ehViagem){
+    base.cte = document.getElementById("inCte").value.trim();
+    base.local = document.getElementById("inLocal").value.trim();
+  }else{
+    const servico = document.getElementById("inServico").value.trim();
+    if(!servico) return falhar("Descreva o serviço.");
+    base.servico = servico;
+    base.diaria = ehDiaria;
+  }
+
+  if(registroEmEdicao){
+    Object.assign(registroEmEdicao, base);
+    aviso(ehViagem ? "Viagem atualizada." : "Despesa atualizada.");
+  }else{
+    dados.registros.push(Object.assign({
+      id: novoId(), caminhaoId: estado.caminhaoId, tipo: estado.tipo, criadoEm: Date.now()
+    }, base));
+    aviso(ehViagem ? "Viagem adicionada." : "Despesa adicionada.");
+  }
+  const mesDoLancamento = data.slice(0,7).split("-");
+  estado.ano = +mesDoLancamento[0];
+  estado.mes = +mesDoLancamento[1];
+  salvar(); render();
+});
+
+/* ---------------- cliques da tela ---------------- */
+document.getElementById("irInicio").addEventListener("click", () => ir("inicio"));
+const dlgMenu = document.getElementById("dlgMenu");
+document.getElementById("icPainel").innerHTML = ICONES.painel;
+document.getElementById("icLixo").innerHTML = ICONES.excluir;
+document.getElementById("icBackup").innerHTML = ICONES.backup;
+document.getElementById("btnMenu").addEventListener("click", () => dlgMenu.showModal());
+dlgMenu.addEventListener("click", e => {
+  const item = e.target.closest("[data-menu]");
+  if(!item) return;
+  dlgMenu.close();
+  if(item.dataset.menu === "painel") ir("painel");
+  if(item.dataset.menu === "lixeira") ir("lixeira");
+  if(item.dataset.menu === "backup") dlgBackup.showModal();
+});
+
+document.addEventListener("click", e => {
+  const alvo = e.target.closest("[data-acao]");
+  if(!alvo) return;
+  const acao = alvo.dataset.acao;
+  const id = alvo.dataset.id;
+
+  if(acao === "inicio") return ir("inicio");
+  if(acao === "caminhao") return ir("caminhao");
+  if(acao === "novoCaminhao") return abrirFormCaminhao(null);
+  if(acao === "editarCaminhao") return abrirFormCaminhao(caminhaoAtual());
+  if(acao === "abrirCaminhao") return ir("caminhao", {caminhaoId:id});
+  if(acao === "abrirTabela") return ir("tabela", {tipo:alvo.dataset.tipo});
+  if(acao === "novoRegistro") return abrirFormRegistro(null);
+  if(acao === "mesAnterior" || acao === "mesSeguinte"){
+    const passo = acao === "mesAnterior" ? -1 : 1;
+    let m = estado.mes + passo, a = estado.ano;
+    if(m < 1){ m = 12; a--; } if(m > 12){ m = 1; a++; }
+    estado.mes = m; estado.ano = a;
+    return render();
+  }
+  if(acao === "editarRegistro"){
+    return abrirFormRegistro(dados.registros.find(r => r.id === id));
+  }
+  if(acao === "excluirRegistro"){
+    const r = dados.registros.find(x => x.id === id);
+    if(!r) return;
+    const nome = estado.tipo === "viagem"
+      ? `a viagem de ${dataBR(r.data)}${r.cte ? " (CT-e " + r.cte + ")" : ""}`
+      : `a despesa "${r.servico}" de ${dataBR(r.data)}`;
+    return perguntar("Mover para a lixeira",
+      `${maiuscula(nome)}, no valor de ${brl(r.valor)}, sai da tabela e vai para a lixeira. Você pode restaurar quando quiser.`,
+      "Mover para a lixeira", () => {
+        dados.registros = dados.registros.filter(x => x.id !== id);
+        dados.lixeira.unshift({ id:novoId(), tipo:r.tipo, excluidoEm:Date.now(),
+                                caminhaoId:r.caminhaoId, placa:caminhaoAtual().placa, registro:r });
+        salvar(); render(); aviso("Movido para a lixeira.");
+      });
+  }
+  if(acao === "excluirCaminhao"){
+    const c = caminhaoAtual();
+    const v = contar(c.id,"viagem"), d = contar(c.id,"despesa");
+    return perguntar("Mover caminhão para a lixeira",
+      `A placa ${c.placa} sai da tela inicial levando ${plural(v,"viagem","viagens")} e ${plural(d,"despesa","despesas")} de todos os meses. Tudo fica guardado na lixeira e pode voltar depois.`,
+      "Mover para a lixeira", () => {
+        const filhos = dados.registros.filter(r => r.caminhaoId === c.id);
+        dados.registros = dados.registros.filter(r => r.caminhaoId !== c.id);
+        dados.caminhoes = dados.caminhoes.filter(x => x.id !== c.id);
+        dados.lixeira.unshift({ id:novoId(), tipo:"caminhao", excluidoEm:Date.now(),
+                                caminhaoId:c.id, placa:c.placa, registro:c, filhos });
+        salvar(); ir("inicio"); aviso("Caminhão movido para a lixeira.");
+      });
+  }
+  if(acao === "lixeira") return ir("lixeira");
+  if(acao === "restaurarLixo") return restaurarLixo(id);
+  if(acao === "apagarLixo"){
+    const l = dados.lixeira.find(x => x.id === id);
+    if(!l) return;
+    const d = descricaoLixo(l);
+    const extra = l.tipo === "caminhao"
+      ? " Os registros que estavam com essa placa também serão apagados de vez."
+      : "";
+    return perguntar("Excluir definitivamente",
+      `${d.titulo} será apagado de vez e não poderá mais ser restaurado.${extra}`,
+      "Excluir de vez", () => {
+        dados.lixeira = dados.lixeira.filter(x => x.id !== id);
+        if(l.tipo === "caminhao"){
+          dados.lixeira = dados.lixeira.filter(x => x.caminhaoId !== l.caminhaoId);
+        }
+        salvar(); render(); aviso("Excluído definitivamente.");
+      });
+  }
+  if(acao === "esvaziarLixeira"){
+    return perguntar("Esvaziar a lixeira",
+      `Os ${dados.lixeira.length} itens guardados serão apagados de vez e não poderão mais ser restaurados.`,
+      "Esvaziar", () => {
+        dados.lixeira = [];
+        salvar(); render(); aviso("Lixeira esvaziada.");
+      });
+  }
+  if(acao === "importarCTe") return document.getElementById("arquivoCTe").click();
+  if(acao === "verTabela") return verTabela();
+  if(acao === "exportarPDF") return exportarPDF();
+  if(acao === "exportarExcel") return exportarExcel();
+});
+
+document.addEventListener("change", e => {
+  if(e.target.id === "selMes"){ estado.mes = +e.target.value; render(); }
+  if(e.target.id === "selAno"){ estado.ano = +e.target.value; render(); }
+});
+
+/* ---------------- restaurar da lixeira ---------------- */
+function restaurarLixo(idLixo, silencioso){
+  const l = dados.lixeira.find(x => x.id === idLixo);
+  if(!l) return;
+
+  if(l.tipo === "caminhao"){
+    const existente = dados.caminhoes.find(c => c.placa === l.registro.placa);
+    if(existente){
+      (l.filhos||[]).forEach(f => { f.caminhaoId = existente.id; dados.registros.push(f); });
+      if(!silencioso) aviso(`A placa ${existente.placa} já estava cadastrada. Os registros voltaram para ela.`);
+    }else{
+      dados.caminhoes.push(l.registro);
+      (l.filhos||[]).forEach(f => dados.registros.push(f));
+      if(!silencioso) aviso("Caminhão restaurado.");
+    }
+  }else{
+    let dono = dados.caminhoes.find(c => c.id === l.caminhaoId);
+    if(!dono){
+      /* o caminhão desse registro também está na lixeira: volta junto */
+      const pai = dados.lixeira.find(x => x.tipo === "caminhao" && x.caminhaoId === l.caminhaoId);
+      if(pai){
+        restaurarLixo(pai.id, true);
+        dono = dados.caminhoes.find(c => c.id === l.caminhaoId)
+            || dados.caminhoes.find(c => c.placa === pai.registro.placa);
+      }
+    }
+    if(!dono){
+      aviso("O caminhão desse registro foi excluído de vez. Cadastre a placa novamente para restaurar.");
+      return;
+    }
+    l.registro.caminhaoId = dono.id;
+    dados.registros.push(l.registro);
+    if(!silencioso) aviso("Registro restaurado.");
+  }
+
+  dados.lixeira = dados.lixeira.filter(x => x.id !== idLixo);
+  salvar();
+  if(!silencioso) render();
+}
+
+/* ---------------- backup ---------------- */
+function baixar(blob, nome){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = nome;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+document.getElementById("btnBaixarBackup").addEventListener("click", () => {
+  const nome = `RK-Transportes_backup_${hoje.toISOString().slice(0,10)}.json`;
+  baixar(new Blob([JSON.stringify(dados,null,2)],{type:"application/json"}), nome);
+  aviso("Cópia de segurança baixada.");
+});
+document.getElementById("btnRestaurar").addEventListener("click", () => document.getElementById("arquivoBackup").click());
+document.getElementById("arquivoBackup").addEventListener("change", e => {
+  const arquivo = e.target.files[0]; if(!arquivo) return;
+  const leitor = new FileReader();
+  leitor.onload = () => {
+    let novo;
+    try{ novo = JSON.parse(leitor.result); }catch(err){ return aviso("Arquivo inválido."); }
+    if(!novo || !Array.isArray(novo.caminhoes) || !Array.isArray(novo.registros)) return aviso("Arquivo inválido.");
+    if(!Array.isArray(novo.lixeira)) novo.lixeira = [];
+    dlgBackup.close();
+    perguntar("Restaurar backup",
+      `O arquivo tem ${novo.caminhoes.length} caminhões e ${novo.registros.length} registros. Restaurar substitui tudo o que está salvo agora neste navegador.`,
+      "Restaurar", () => {
+        dados = novo; salvar(); ir("inicio"); aviso("Backup restaurado.");
+      });
+  };
+  leitor.readAsText(arquivo);
+  e.target.value = "";
+});
+
+/* ==========================================================
+   EXPORTAÇÃO
+   ========================================================== */
+function dadosRelatorio(){
+  const c = caminhaoAtual();
+  const ehViagem = estado.tipo === "viagem";
+  const lista = registros(c.id, estado.tipo, estado.ano, estado.mes);
+  return {
+    c, ehViagem, lista,
+    titulo: ehViagem ? "Relatório de Viagens" : "Relatório de Despesas",
+    periodo: maiuscula(periodoTexto(estado.mes, estado.ano)),
+    arquivo: `RK-Transportes_${c.placa}_${ehViagem?"Viagens":"Despesas"}_${String(estado.mes).padStart(2,"0")}-${estado.ano}`
+  };
+}
+
+/* ---------------- Excel (.xlsx) sem dependências ---------------- */
+const TABELA_CRC = (() => {
+  const t = new Uint32Array(256);
+  for(let n=0;n<256;n++){
+    let c = n;
+    for(let k=0;k<8;k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(buf){
+  let c = 0xFFFFFFFF;
+  for(let i=0;i<buf.length;i++) c = TABELA_CRC[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function zipar(arquivos){
+  const cod = new TextEncoder();
+  const partes = [], central = [];
+  let deslocamento = 0;
+  arquivos.forEach(f => {
+    const nome = cod.encode(f.nome);
+    const conteudo = typeof f.dados === "string" ? cod.encode(f.dados) : f.dados;
+    const crc = crc32(conteudo);
+    const local = new Uint8Array(30 + nome.length);
+    const dl = new DataView(local.buffer);
+    dl.setUint32(0,0x04034b50,true); dl.setUint16(4,20,true); dl.setUint16(6,0x0800,true);
+    dl.setUint32(14,crc,true); dl.setUint32(18,conteudo.length,true); dl.setUint32(22,conteudo.length,true);
+    dl.setUint16(26,nome.length,true);
+    local.set(nome,30);
+    partes.push(local, conteudo);
+
+    const cd = new Uint8Array(46 + nome.length);
+    const dc = new DataView(cd.buffer);
+    dc.setUint32(0,0x02014b50,true); dc.setUint16(4,20,true); dc.setUint16(6,20,true); dc.setUint16(8,0x0800,true);
+    dc.setUint32(16,crc,true); dc.setUint32(20,conteudo.length,true); dc.setUint32(24,conteudo.length,true);
+    dc.setUint16(28,nome.length,true); dc.setUint32(42,deslocamento,true);
+    cd.set(nome,46);
+    central.push(cd);
+    deslocamento += local.length + conteudo.length;
+  });
+  const tamanhoCentral = central.reduce((s,c)=>s+c.length,0);
+  const fim = new Uint8Array(22);
+  const df = new DataView(fim.buffer);
+  df.setUint32(0,0x06054b50,true);
+  df.setUint16(8,arquivos.length,true); df.setUint16(10,arquivos.length,true);
+  df.setUint32(12,tamanhoCentral,true); df.setUint32(16,deslocamento,true);
+  return new Blob([...partes, ...central, fim], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+const xesc = t => String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const serialExcel = iso => {
+  const [a,m,d] = iso.split("-").map(Number);
+  return Math.round(Date.UTC(a,m-1,d)/86400000) + 25569;
+};
+const colLetra = i => String.fromCharCode(65 + i);
+
+function exportarExcel(){
+  const R = dadosRelatorio();
+  const cabecalhos = R.ehViagem
+    ? ["Data","Nº do CT-e","Local","Valor do frete"]
+    : ["Data","Serviço","Tipo","Valor"];
+  const larguras = R.ehViagem ? [12,18,38,18] : [12,42,12,18];
+
+  const linhas = [];
+  const cel = (col,lin,estilo,tipo,valor) =>
+    tipo === "n"
+      ? `<c r="${colLetra(col)}${lin}" s="${estilo}"><v>${valor}</v></c>`
+      : (valor === "" ? `<c r="${colLetra(col)}${lin}" s="${estilo}"/>`
+                      : `<c r="${colLetra(col)}${lin}" s="${estilo}" t="inlineStr"><is><t xml:space="preserve">${xesc(valor)}</t></is></c>`);
+
+  let n = 0;
+  const linha = celulas => { n++; linhas.push(`<row r="${n}">${celulas(n)}</row>`); };
+
+  linha(l => cel(0,l,1,"s","RK TRANSPORTES"));
+  linha(l => cel(0,l,2,"s",R.titulo));
+  linha(l => cel(0,l,2,"s","Caminhão: " + R.c.placa));
+  linha(l => cel(0,l,2,"s","Período: " + R.periodo));
+  linha(() => "");
+  linha(l => cabecalhos.map((h,i) => cel(i,l,3,"s",h)).join(""));
+
+  R.lista.forEach(r => {
+    linha(l => R.ehViagem
+      ? cel(0,l,4,"n",serialExcel(r.data)) + cel(1,l,5,"s",r.cte||"") + cel(2,l,5,"s",r.local||"") + cel(3,l,6,"n",r.valor)
+      : cel(0,l,4,"n",serialExcel(r.data)) + cel(1,l,5,"s",r.servico||"") + cel(2,l,5,"s",r.diaria?"Diária":"Serviço") + cel(3,l,6,"n",r.valor)
+    );
+  });
+
+  linha(() => "");
+  const totalLinha = (rotulo,valor) => linha(l => {
+    let s = cel(0,l,7,"s",rotulo);
+    for(let i=1;i<cabecalhos.length-1;i++) s += cel(i,l,7,"s","");
+    return s + cel(cabecalhos.length-1,l,8,"n",valor);
+  });
+
+  if(R.ehViagem){
+    totalLinha("Total de fretes — " + R.periodo, totalFretes(R.lista));
+  }else{
+    const t = totaisDespesas(R.lista);
+    totalLinha("Total dos serviços (sem diárias)", t.servicos);
+    totalLinha("Total de diárias", t.diarias);
+    totalLinha("Total geral (serviços + diárias)", t.geral);
+  }
+
+  const cols = larguras.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("");
+  const planilha =
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetFormatPr defaultRowHeight="15"/><cols>${cols}</cols><sheetData>${linhas.join("")}</sheetData></worksheet>`;
+
+  const estilos =
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<numFmts count="2"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="&quot;R$&quot;\\ #,##0.00"/></numFmts>
+<fonts count="5">
+<font><sz val="11"/><name val="Calibri"/></font>
+<font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>
+<font><b/><sz val="11"/><name val="Calibri"/></font>
+<font><b/><sz val="16"/><color rgb="FF0E2A47"/><name val="Calibri"/></font>
+<font><sz val="11"/><color rgb="FF5A6473"/><name val="Calibri"/></font>
+</fonts>
+<fills count="4">
+<fill><patternFill patternType="none"/></fill>
+<fill><patternFill patternType="gray125"/></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FF0E2A47"/><bgColor indexed="64"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFEDF0F4"/><bgColor indexed="64"/></patternFill></fill>
+</fills>
+<borders count="2">
+<border><left/><right/><top/><bottom/><diagonal/></border>
+<border><left style="thin"><color rgb="FFDCE2EA"/></left><right style="thin"><color rgb="FFDCE2EA"/></right><top style="thin"><color rgb="FFDCE2EA"/></top><bottom style="thin"><color rgb="FFDCE2EA"/></bottom><diagonal/></border>
+</borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="9">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="4" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>
+<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>
+<xf numFmtId="0" fontId="2" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>
+<xf numFmtId="165" fontId="2" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>
+</cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+
+  const arquivos = [
+    { nome:"[Content_Types].xml", dados:
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>` },
+    { nome:"_rels/.rels", dados:
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>` },
+    { nome:"xl/workbook.xml", dados:
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${xesc((R.ehViagem?"Viagens ":"Despesas ") + String(estado.mes).padStart(2,"0") + "-" + estado.ano)}" sheetId="1" r:id="rId1"/></sheets></workbook>` },
+    { nome:"xl/_rels/workbook.xml.rels", dados:
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>` },
+    { nome:"xl/styles.xml", dados: estilos },
+    { nome:"xl/worksheets/sheet1.xml", dados: planilha }
+  ];
+
+  baixar(zipar(arquivos), R.arquivo + ".xlsx");
+  aviso("Planilha baixada.");
+}
+
+/* ---------------- PDF ---------------- */
+function exportarPDF(){
+  const R = dadosRelatorio();
+  const temJsPDF = window.jspdf && window.jspdf.jsPDF;
+  if(!temJsPDF){ imprimirRelatorio(R); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:"mm", format:"a4"});
+  if(typeof doc.autoTable !== "function"){ imprimirRelatorio(R); return; }
+
+  const azul = [14,42,71], cinza = [237,240,244], texto = [11,13,16], suave = [90,100,115];
+  const geradoEm = hoje.toLocaleDateString("pt-BR") + " às " + hoje.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+
+  const cabecalhos = R.ehViagem
+    ? [["Data","Nº do CT-e","Local","Valor do frete"]]
+    : [["Data","Serviço","Tipo","Valor"]];
+  const corpo = R.lista.map(r => R.ehViagem
+    ? [dataBR(r.data), r.cte||"—", r.local||"—", brl(r.valor)]
+    : [dataBR(r.data), r.servico||"—", r.diaria?"Diária":"Serviço", brl(r.valor)]);
+
+  const ultima = cabecalhos[0].length - 1;
+  const rodapeTabela = [];
+  const linhaTotal = (rotulo, valor, forte) => {
+    const base = forte
+      ? {fillColor:azul, textColor:255, fontStyle:"bold", fontSize:11}
+      : {fillColor:cinza, textColor:texto, fontStyle:"bold", fontSize:10};
+    rodapeTabela.push([
+      {content:rotulo, colSpan:ultima, styles:Object.assign({halign:"left"}, base)},
+      {content:brl(valor), styles:Object.assign({halign:"right"}, base)}
+    ]);
+  };
+  if(R.ehViagem){
+    linhaTotal("Total de fretes — " + R.periodo, totalFretes(R.lista), true);
+  }else{
+    const t = totaisDespesas(R.lista);
+    linhaTotal("Total dos serviços (sem diárias)", t.servicos, false);
+    linhaTotal("Total de diárias", t.diarias, false);
+    linhaTotal("Total geral (serviços + diárias)", t.geral, true);
+  }
+
+  doc.autoTable({
+    head: cabecalhos,
+    body: corpo,
+    foot: rodapeTabela,
+    showFoot: "lastPage",
+    margin: {top: 44, left: 14, right: 14, bottom: 20},
+    styles: {font:"helvetica", fontSize:10, cellPadding:2.6, textColor:texto, lineColor:[220,226,234], lineWidth:.1},
+    headStyles: {fillColor:azul, textColor:255, fontStyle:"bold", fontSize:9.5, halign:"left"},
+    alternateRowStyles: {fillColor:[250,251,252]},
+    columnStyles: R.ehViagem
+      ? {0:{cellWidth:24, halign:"center"}, 1:{cellWidth:32}, 3:{cellWidth:34, halign:"right"}}
+      : {0:{cellWidth:24, halign:"center"}, 2:{cellWidth:24, halign:"center"}, 3:{cellWidth:34, halign:"right"}},
+    didDrawPage: () => {
+      const larg = doc.internal.pageSize.getWidth();
+      const alt = doc.internal.pageSize.getHeight();
+      doc.setFillColor.apply(doc, azul);
+      doc.rect(0,0,larg,26,"F");
+      doc.setTextColor(255,255,255);
+      doc.setFont("helvetica","bold"); doc.setFontSize(17);
+      doc.text("RK TRANSPORTES", 14, 13);
+      doc.setFont("helvetica","normal"); doc.setFontSize(9.5);
+      doc.setTextColor(180,200,220);
+      doc.text("Controle de viagens e despesas", 14, 19.5);
+      doc.setFontSize(11); doc.setTextColor(255,255,255); doc.setFont("helvetica","bold");
+      doc.text(R.titulo, larg-14, 16, {align:"right"});
+
+      doc.setTextColor.apply(doc, texto);
+      doc.setFont("helvetica","bold"); doc.setFontSize(13);
+      doc.text("Caminhão " + R.c.placa, 14, 36);
+      doc.setFont("helvetica","normal"); doc.setFontSize(10.5);
+      doc.setTextColor.apply(doc, suave);
+      doc.text("Período: " + R.periodo, larg-14, 36, {align:"right"});
+
+      doc.setFontSize(8.5); doc.setTextColor.apply(doc, suave);
+      doc.text("RK Transportes · gerado em " + geradoEm, 14, alt-9);
+      doc.text("Página " + doc.internal.getNumberOfPages() + " de {paginas}", larg-14, alt-9, {align:"right"});
+    }
+  });
+
+  if(typeof doc.putTotalPages === "function") doc.putTotalPages("{paginas}");
+  doc.save(R.arquivo + ".pdf");
+  aviso("PDF gerado.");
+}
+
+/* ---------------- a tabela do relatório (usada na tela e no PDF) ---------------- */
+const CSS_RELATORIO = `
+.rel-faixa{background:#0E2A47;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.rel-faixa h1{font-size:16px;margin:0;letter-spacing:.08em;font-weight:700}
+.rel-faixa span{font-size:12px}
+.rel-info{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:15px 18px 9px;font-size:12.5px;color:#5A6473}
+.rel-info b{font-size:16px;color:#0B0D10}
+.rel-tab{width:100%;border-collapse:collapse;font-size:12.5px;color:#0B0D10}
+.rel-tab th{background:#0E2A47;color:#fff;text-align:left;padding:8px 10px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+.rel-tab td{padding:7px 10px;border-bottom:1px solid #DCE2EA}
+.rel-tab tbody tr:nth-child(even) td{background:#FAFBFC}
+.rel-d{text-align:right;white-space:nowrap}
+.rel-c{text-align:center;white-space:nowrap}
+.rel-tot td{background:#EDF0F4;font-weight:700;border-bottom:1px solid #DCE2EA}
+.rel-forte td{background:#0E2A47;color:#fff;font-weight:700;font-size:13px;border:0}
+.rel-pe{padding:11px 18px 14px;font-size:10px;color:#5A6473;margin:0}
+`;
+document.head.insertAdjacentHTML("beforeend", "<style>" + CSS_RELATORIO + "</style>");
+
+function relatorioHTML(R){
+  const linhas = R.lista.map(r => R.ehViagem
+    ? `<tr><td class="rel-c">${dataBR(r.data)}</td><td class="rel-c">${esc(r.cte||"—")}</td><td>${esc(r.local||"—")}</td><td class="rel-d">${brl(r.valor)}</td></tr>`
+    : `<tr><td class="rel-c">${dataBR(r.data)}</td><td>${esc(r.servico||"—")}</td><td class="rel-c">${r.diaria?"Diária":"Serviço"}</td><td class="rel-d">${brl(r.valor)}</td></tr>`
+  ).join("");
+
+  let totais;
+  if(R.ehViagem){
+    totais = `<tr class="rel-forte"><td colspan="3">Total de fretes — ${esc(R.periodo)}</td><td class="rel-d">${brl(totalFretes(R.lista))}</td></tr>`;
+  }else{
+    const t = totaisDespesas(R.lista);
+    totais = `<tr class="rel-tot"><td colspan="3">Total dos serviços (sem diárias)</td><td class="rel-d">${brl(t.servicos)}</td></tr>
+      <tr class="rel-tot"><td colspan="3">Total de diárias</td><td class="rel-d">${brl(t.diarias)}</td></tr>
+      <tr class="rel-forte"><td colspan="3">Total geral (serviços + diárias)</td><td class="rel-d">${brl(t.geral)}</td></tr>`;
+  }
+
+  const cab = R.ehViagem
+    ? '<th class="rel-c">Data</th><th class="rel-c">Nº do CT-e</th><th>Local</th><th class="rel-d">Valor do frete</th>'
+    : '<th class="rel-c">Data</th><th>Serviço</th><th class="rel-c">Tipo</th><th class="rel-d">Valor</th>';
+
+  const agora = new Date();
+  return `<div class="rel-faixa"><h1>RK TRANSPORTES</h1><span>${esc(R.titulo)}</span></div>
+    <div class="rel-info"><b>Caminhão ${esc(R.c.placa)}</b><span>Período: ${esc(R.periodo)}</span></div>
+    <table class="rel-tab"><thead><tr>${cab}</tr></thead><tbody>${linhas}</tbody><tfoot>${totais}</tfoot></table>
+    <p class="rel-pe">${R.lista.length} ${R.ehViagem ? "viagens" : "despesas"} · gerado em ${agora.toLocaleDateString("pt-BR")} às ${agora.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</p>`;
+}
+
+/* Tabela para ler na tela: a mesma informação do PDF, montada para caber no celular. */
+function tabelaTelaHTML(R){
+  const linhas = R.lista.map(r => {
+    const dia = dataBR(r.data);
+    const meio = R.ehViagem
+      ? `${esc(r.local || "—")}${r.cte ? `<small>CT-e ${esc(r.cte)}</small>` : ""}`
+      : `${esc(r.servico || "—")}${r.diaria ? '<small class="tv-tag">Diária</small>' : ""}`;
+    return `<tr>
+      <td class="tv-data">${dia.slice(0,5)}<small>${dia.slice(6)}</small></td>
+      <td class="tv-desc">${meio}</td>
+      <td class="tv-valor">${brl(r.valor)}</td>
+    </tr>`;
+  }).join("");
+
+  let totais;
+  if(R.ehViagem){
+    totais = `<div class="total-linha total-linha--forte"><span>Total de fretes</span><b>${brl(totalFretes(R.lista))}</b></div>`;
+  }else{
+    const t = totaisDespesas(R.lista);
+    totais = `
+      <div class="total-linha"><span>Serviços (sem diárias)</span><b>${brl(t.servicos)}</b></div>
+      <div class="total-linha"><span>Diárias</span><b>${brl(t.diarias)}</b></div>
+      <div class="total-linha total-linha--forte"><span>Total geral</span><b>${brl(t.geral)}</b></div>`;
+  }
+
+  return `
+    <div class="tv-cab">
+      <span><b>${esc(R.c.placa)}</b><small>${esc(R.titulo.replace("Relatório de ",""))} · ${esc(R.periodo)}</small></span>
+      <i>${plural(R.lista.length, R.ehViagem ? "viagem" : "despesa", R.ehViagem ? "viagens" : "despesas")}</i>
+    </div>
+    <table class="tv"><tbody>${linhas}</tbody></table>
+    <div class="totais">${totais}</div>`;
+}
+
+function verTabela(){
+  const R = dadosRelatorio();
+  document.getElementById("tituloFolha").textContent = `${R.c.placa} · ${R.periodo}`;
+  document.getElementById("folha").innerHTML = tabelaTelaHTML(R);
+  document.getElementById("dlgTabela").showModal();
+}
+
+/* Alternativa quando o computador está sem internet: abre a versão para impressão,
+   onde o próprio navegador salva em PDF. */
+function imprimirRelatorio(R){
+  const janela = window.open("", "_blank");
+  if(!janela){ aviso("Libere as janelas pop-up para gerar o PDF."); return; }
+  janela.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(R.arquivo)}</title>
+  <style>@page{size:A4;margin:12mm}
+  body{font-family:Arial,Helvetica,sans-serif;margin:0}
+  thead{display:table-header-group}tfoot{display:table-row-group}
+  ${CSS_RELATORIO}</style></head><body>${relatorioHTML(R)}
+  <p class="rel-pe">Para salvar em PDF, escolha "Salvar como PDF" no destino da impressão.</p>
+  </body></html>`);
+  janela.document.close();
+  setTimeout(() => { janela.focus(); janela.print(); }, 400);
+}
+
+/* ==========================================================
+   LEITURA AUTOMÁTICA DO CT-e (DACTE em PDF ou XML)
+   ========================================================== */
+const PDFJS_URL = "lib/pdf.min.js";
+const PDFJS_WORKER = "lib/pdf.worker.min.js";
+const dlgImportar = document.getElementById("dlgImportar");
+let pendentes = [];
+
+async function carregarPdfJs(){
+  if(window.pdfjsLib) return window.pdfjsLib;
+  await new Promise((ok, erro) => {
+    const s = document.createElement("script");
+    s.src = PDFJS_URL;
+    s.onload = ok;
+    s.onerror = () => erro(new Error("leitor-indisponivel"));
+    document.head.appendChild(s);
+  });
+  /* O auxiliar de leitura vem do próprio programa. Quando o navegador não deixa
+     criá-lo direto do arquivo, o pdf.js lê na própria página. */
+  try{
+    const codigo = await (await fetch(PDFJS_WORKER)).blob();
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(codigo);
+  }catch(e){
+    try{ window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER; }catch(e2){}
+  }
+  return window.pdfjsLib;
+}
+
+async function itensDoPDF(arquivo){
+  const lib = await carregarPdfJs();
+  const doc = await lib.getDocument({data: await arquivo.arrayBuffer()}).promise;
+  const itens = [];
+  for(let p = 1; p <= doc.numPages; p++){
+    const conteudo = await (await doc.getPage(p)).getTextContent();
+    conteudo.items.forEach(i => {
+      const t = (i.str || "").trim();
+      if(t) itens.push({ t, x: i.transform[4], y: i.transform[5], p });
+    });
+  }
+  return itens;
+}
+
+const ehDinheiro = t => /^R?\$?\s*\d{1,3}(\.\d{3})*,\d{2}$/.test(String(t).trim());
+
+/* Lê os campos do DACTE pela posição de cada rótulo na página. */
+function lerDACTE(itens){
+  const r = { placas: [] };
+  const p1 = itens.filter(i => i.p === 1);
+  const acha = re => p1.find(i => re.test(i.t));
+
+  /* chave de acesso: os 44 dígitos trazem o número do CT-e e o mês da emissão */
+  let chave = null;
+  for(const i of itens){
+    const d = i.t.replace(/\D/g, "");
+    if(d.length === 44 && d.slice(20,22) === "57"){ chave = d; break; }
+  }
+  if(!chave){
+    const juntos = itens.map(i => i.t).join(" ");
+    const candidatas = (juntos.match(/(?:\d[ .-]?){43}\d/g) || []).map(c => c.replace(/\D/g,""));
+    chave = candidatas.find(c => c.length === 44 && c.slice(20,22) === "57") || null;
+  }
+  let anoChave = null, mesChave = null;
+  if(chave){
+    r.cte = String(parseInt(chave.slice(25,34), 10));
+    anoChave = 2000 + parseInt(chave.slice(2,4), 10);
+    mesChave = parseInt(chave.slice(4,6), 10);
+  }
+
+  /* número do CT-e sem a chave: rótulo "Nº Documento" ou "NÚMERO" */
+  if(!r.cte){
+    const rot = acha(/N[ºo°]?\s*Documento/i) || acha(/^N[ÚU]MERO$/i);
+    if(rot){
+      const v = p1.filter(i => /^\d{1,9}$/.test(i.t) && i.x > rot.x - 10 && i.x < rot.x + 260 && i.y < rot.y + 6 && i.y > rot.y - 22)
+                  .sort((a,b) => Math.abs(a.y - rot.y) - Math.abs(b.y - rot.y))[0];
+      if(v) r.cte = String(parseInt(v.t, 10));
+    }
+  }
+
+  /* data de emissão */
+  const rotData = p1.find(i => /EMISS/i.test(i.t) && /(DATA|HORA)/i.test(i.t));
+  let data = null;
+  if(rotData){
+    const v = p1.filter(i => /\b\d{2}\/\d{2}\/\d{4}\b/.test(i.t) && i.y < rotData.y && i.y > rotData.y - 26 && i.x > rotData.x - 70 && i.x < rotData.x + 240)
+                .sort((a,b) => (rotData.y - a.y) - (rotData.y - b.y))[0];
+    if(v) data = v.t.match(/\b(\d{2})\/(\d{2})\/(\d{4})\b/);
+  }
+  if(!data){
+    const todas = [];
+    itens.forEach(i => (i.t.match(/\b\d{2}\/\d{2}\/\d{4}\b/g) || []).forEach(x => todas.push(x)));
+    const iguais = anoChave ? todas.filter(d => d.slice(3) === String(mesChave).padStart(2,"0") + "/" + anoChave) : [];
+    const escolhida = iguais[0] || todas[0];
+    if(escolhida) data = escolhida.match(/\b(\d{2})\/(\d{2})\/(\d{4})\b/);
+  }
+  if(data) r.data = `${data[3]}-${data[2]}-${data[1]}`;
+
+  /* local: o destino da prestação */
+  const rotDestino = p1.find(i => /DESTINO/i.test(i.t) && /PRESTA/i.test(i.t)) || acha(/^DESTINO/i);
+  if(rotDestino){
+    const v = p1.filter(i => i.y < rotDestino.y && i.y > rotDestino.y - 17 && i.x > rotDestino.x - 8 && i.x < rotDestino.x + 200
+                          && i.t.length > 2 && !/^\d+$/.test(i.t) && !/^(IBGE|CEP|UF|FONE)$/i.test(i.t))
+                .sort((a,b) => (rotDestino.y - a.y) - (rotDestino.y - b.y) || a.x - b.x)[0];
+    if(v) r.local = v.t;
+  }
+
+  /* valor: componente "Frete Peso"; guarda também o total dos serviços */
+  const rotFrete = acha(/frete\s*peso/i);
+  if(rotFrete){
+    const v = p1.filter(i => Math.abs(i.y - rotFrete.y) <= 3 && i.x > rotFrete.x + 10 && ehDinheiro(i.t))
+                .sort((a,b) => a.x - b.x)[0];
+    if(v) r.valor = dinheiroParaNumero(v.t);
+  }
+  const semEspaco = t => t.toUpperCase().replace(/[\s.]/g, "");
+  const rotTotal = p1.find(i => /VALORTOTALDOS/.test(semEspaco(i.t)))
+                || p1.find(i => /^VALORARECEBER|^VALORA$/.test(semEspaco(i.t)));
+  if(rotTotal){
+    const v = p1.filter(i => i.y < rotTotal.y && i.y > rotTotal.y - 28 && i.x > rotTotal.x - 40 && i.x < rotTotal.x + 230 && ehDinheiro(i.t))
+                .sort((a,b) => (rotTotal.y - a.y) - (rotTotal.y - b.y))[0];
+    if(v) r.total = dinheiroParaNumero(v.t);
+  }
+  if(r.valor == null && r.total != null) r.valor = r.total;
+
+  /* placas que aparecem no documento, para conferir se é o caminhão certo */
+  p1.forEach(i => {
+    const t = i.t.trim().toUpperCase();
+    if(/^[A-Z]{3}-?\d[A-Z]\d{2}$/.test(t) || /^[A-Z]{3}-?\d{4}$/.test(t)) r.placas.push(t.replace("-",""));
+  });
+  r.placas = [...new Set(r.placas)];
+  return r;
+}
+
+/* Lê o XML do CT-e, quando o arquivo enviado for o XML. */
+function lerXMLCTe(texto){
+  const doc = new DOMParser().parseFromString(texto, "application/xml");
+  const pega = nome => { const el = doc.getElementsByTagName(nome)[0]; return el ? el.textContent.trim() : ""; };
+  const r = { placas: [] };
+  const nCT = pega("nCT"); if(nCT) r.cte = String(parseInt(nCT, 10));
+  const emissao = pega("dhEmi") || pega("dEmi"); if(emissao) r.data = emissao.slice(0,10);
+  const municipio = pega("xMunFim"), uf = pega("UFFim");
+  if(municipio) r.local = uf ? municipio + "-" + uf : municipio;
+  const total = parseFloat(pega("vTPrest")); if(!isNaN(total)) r.total = total;
+  const componentes = [...doc.getElementsByTagName("Comp")];
+  const fretePeso = componentes.find(c => {
+    const n = c.getElementsByTagName("xNome")[0];
+    return n && /frete\s*peso/i.test(n.textContent);
+  });
+  if(fretePeso){
+    const v = fretePeso.getElementsByTagName("vComp")[0];
+    if(v) r.valor = parseFloat(v.textContent);
+  }
+  if(r.valor == null && r.total != null) r.valor = r.total;
+  [...doc.getElementsByTagName("placa")].forEach(p => r.placas.push(p.textContent.trim().toUpperCase()));
+  r.placas = [...new Set(r.placas)];
+  if(!r.cte && !r.data && !r.valor) throw new Error("xml-sem-cte");
+  return r;
+}
+
+function dataParaISO(t){
+  t = String(t || "").trim();
+  let m = t.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/);
+  if(m){
+    const ano = m[3].length === 2 ? "20" + m[3] : m[3];
+    return `${ano}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
+  }
+  m = t.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? m[0] : "";
+}
+
+/* Planilha salva como CSV: uma viagem por linha. */
+function lerCSV(texto, nomeArquivo){
+  const linhas = texto.split(/\r?\n/).filter(l => l.trim());
+  if(!linhas.length) throw new Error("vazio");
+
+  const separador = [";", "\t", ","]
+    .map(sep => ({ sep, quantos: linhas[0].split(sep).length - 1 }))
+    .sort((a,b) => b.quantos - a.quantos)[0];
+  if(!separador.quantos) throw new Error("formato");
+
+  const colunas = l => l.split(separador.sep).map(c => c.trim().replace(/^"|"$/g, ""));
+  const cabecalho = colunas(linhas[0]).map(c => c.toLowerCase());
+  const onde = (...nomes) => cabecalho.findIndex(c => nomes.some(n => c.includes(n)));
+
+  let mapa = { data:0, cte:1, local:2, valor:3 }, primeira = 0;
+  if(onde("data") >= 0 || onde("valor","frete") >= 0){
+    mapa = { data: onde("data"), cte: onde("ct-e","cte","documento","número","numero"),
+             local: onde("local","destino","cidade","muni"), valor: onde("valor","frete") };
+    primeira = 1;
+  }
+
+  const achadas = [];
+  for(let i = primeira; i < linhas.length; i++){
+    const c = colunas(linhas[i]);
+    const data = dataParaISO(mapa.data >= 0 ? c[mapa.data] : "");
+    const valor = mapa.valor >= 0 ? dinheiroParaNumero(c[mapa.valor]) : 0;
+    if(!data && !(valor > 0)) continue;
+    achadas.push({
+      arquivo: `${nomeArquivo} · linha ${i + 1}`, incluir: true, placas: [], erro: "", aviso: "",
+      data, valor: valor > 0 ? valor : null, total: null,
+      cte: mapa.cte >= 0 ? (c[mapa.cte] || "").trim() : "",
+      local: mapa.local >= 0 ? (c[mapa.local] || "").trim() : ""
+    });
+  }
+  if(!achadas.length) throw new Error("formato");
+  return achadas;
+}
+
+async function analisarArquivo(arquivo){
+  const nome = arquivo.name;
+  const linha = { arquivo: nome, incluir: true, data: "", cte: "", local: "", valor: null, total: null, placas: [], erro: "", aviso: "" };
+  let achadas = [linha];
+
+  const ehImagem = /^image\//.test(arquivo.type) || /\.(jpe?g|png|heic|heif|webp|gif|bmp|tiff?)$/i.test(nome);
+  const ehTexto  = /\.(csv|txt|tsv)$/i.test(nome) || /^text\/(csv|plain|tab)/.test(arquivo.type);
+  const ehXML    = /\.xml$/i.test(nome) || /xml/i.test(arquivo.type);
+  const ehPDF    = /\.pdf$/i.test(nome) || /pdf/i.test(arquivo.type);
+
+  try{
+    if(ehXML){
+      Object.assign(linha, lerXMLCTe(await arquivo.text()));
+    }else if(ehPDF){
+      const itens = await itensDoPDF(arquivo);
+      if(!itens.length) throw new Error("sem-texto");
+      Object.assign(linha, lerDACTE(itens));
+    }else if(ehTexto){
+      achadas = lerCSV(await arquivo.text(), nome);
+    }else if(ehImagem){
+      throw new Error("imagem");
+    }else{
+      throw new Error("formato");
+    }
+  }catch(e){
+    const causa = e && e.message;
+    linha.erro = causa === "leitor-indisponivel"
+      ? "Não consegui abrir o leitor de PDF. Preencha os campos aqui."
+      : causa === "imagem"
+        ? "É uma foto: não consigo ler o que está escrito nela. Preencha os campos aqui."
+        : causa === "sem-texto"
+          ? "Este PDF é digitalizado (imagem). Preencha os campos aqui."
+          : causa === "formato" || causa === "vazio"
+            ? "Não sei ler este tipo de arquivo. Preencha aqui, ou envie o PDF ou o XML do CT-e."
+            : "Não consegui ler este arquivo. Preencha os campos aqui.";
+    linha.incluir = false;
+    achadas = [linha];
+  }
+
+  const c = caminhaoAtual();
+  achadas.forEach(linha => {
+   if(!linha.erro){
+    if(linha.placas.length && !linha.placas.includes(c.placa.replace(/[^A-Za-z0-9]/g,"").toUpperCase())){
+      linha.aviso = "Atenção: o documento é da placa " + linha.placas.join(" / ") + ".";
+    }
+    const repetido = linha.cte && dados.registros.find(x => x.caminhaoId === c.id && x.tipo === "viagem" && String(x.cte) === String(linha.cte));
+    if(repetido){
+      linha.aviso = "CT-e " + linha.cte + " já lançado em " + dataBR(repetido.data) + ".";
+      linha.incluir = false;
+      linha.travada = true;
+    }
+   }
+  });
+  return achadas;
+}
+
+function desenharImportacao(){
+  const corpo = document.getElementById("corpoImportar");
+  corpo.innerHTML = pendentes.map((l, i) => `
+    <div class="import-linha" data-i="${i}" data-fora="${l.incluir ? "0" : "1"}">
+      <div class="import-topo">
+        <label class="marcar"><input type="checkbox" data-campo="incluir" ${l.incluir ? "checked" : ""}> <b>${esc(l.arquivo)}</b></label>
+        <span class="nota ${l.erro || l.aviso ? "nota--alerta" : ""}">${esc(l.erro || l.aviso || (l.cte ? "CT-e " + l.cte + " lido" : "Confira os campos"))}</span>
+      </div>
+      <div class="grade4">
+        <div class="campo"><label>Data</label><input type="date" data-campo="data" value="${esc(l.data)}"></div>
+        <div class="campo"><label>Nº do CT-e</label><input data-campo="cte" inputmode="numeric" value="${esc(l.cte)}"></div>
+        <div class="campo"><label>Local</label><input data-campo="local" value="${esc(l.local)}"></div>
+        <div class="campo"><label>Valor do frete</label>
+          <div class="moeda"><span>R$</span><input data-campo="valor" inputmode="decimal" value="${l.valor != null ? numero(l.valor) : ""}"></div>
+          ${l.total != null && l.total !== l.valor ? `<button type="button" class="link" data-total="${l.total}">Usar o total dos serviços: ${brl(l.total)}</button>` : ""}
+        </div>
+      </div>
+    </div>`).join("");
+
+  corpo.querySelectorAll('input[data-campo="valor"]').forEach(mascaraMoeda);
+  atualizarBotaoImportar();
+}
+
+function atualizarBotaoImportar(){
+  const marcados = pendentes.filter(l => l.incluir).length;
+  const botao = document.getElementById("confirmarImportacao");
+  botao.textContent = marcados === 1 ? "Salvar 1 viagem" : `Salvar ${marcados} viagens`;
+  botao.disabled = marcados === 0;
+}
+
+document.getElementById("corpoImportar").addEventListener("input", e => {
+  const linha = e.target.closest(".import-linha"); if(!linha) return;
+  const l = pendentes[+linha.dataset.i];
+  const campo = e.target.dataset.campo;
+  if(campo === "incluir"){
+    l.incluir = e.target.checked;
+    linha.dataset.fora = l.incluir ? "0" : "1";
+    atualizarBotaoImportar();
+    return;
+  }
+  if(campo === "valor") l.valor = dinheiroParaNumero(e.target.value);
+  else if(campo) l[campo] = e.target.value;
+
+  /* preencheu à mão o que faltava: já marca a linha para ser salva */
+  if(!l.incluir && l.data && l.valor > 0 && !l.travada){
+    l.incluir = true;
+    const marca = linha.querySelector('input[data-campo="incluir"]');
+    if(marca) marca.checked = true;
+    linha.dataset.fora = "0";
+    atualizarBotaoImportar();
+  }
+});
+
+document.getElementById("corpoImportar").addEventListener("click", e => {
+  const botao = e.target.closest("[data-total]"); if(!botao) return;
+  const linha = botao.closest(".import-linha");
+  const l = pendentes[+linha.dataset.i];
+  l.valor = parseFloat(botao.dataset.total);
+  linha.querySelector('input[data-campo="valor"]').value = numero(l.valor);
+  botao.remove();
+});
+
+document.getElementById("arquivoCTe").addEventListener("change", async e => {
+  const arquivos = [...e.target.files];
+  e.target.value = "";
+  if(!arquivos.length) return;
+
+  document.getElementById("subImportar").textContent =
+    "PDF e XML são lidos sozinhos; foto e outros formatos entram em branco. Corrija o que precisar — nada é salvo antes de você confirmar.";
+  document.getElementById("corpoImportar").innerHTML =
+    `<p class="carregando">Lendo ${arquivos.length === 1 ? "o arquivo" : arquivos.length + " arquivos"}…</p>`;
+  document.getElementById("confirmarImportacao").disabled = true;
+  dlgImportar.showModal();
+
+  pendentes = [];
+  for(const arquivo of arquivos) pendentes.push(...(await analisarArquivo(arquivo)));
+  desenharImportacao();
+});
+
+document.getElementById("confirmarImportacao").addEventListener("click", () => {
+  const escolhidas = pendentes.filter(l => l.incluir);
+  const invalidas = escolhidas.filter(l => !l.data || !(l.valor > 0));
+  if(invalidas.length){
+    invalidas.forEach(l => { l.aviso = "Preencha a data e o valor para salvar esta viagem."; });
+    desenharImportacao();
+    aviso("Faltou a data ou o valor em " + invalidas.length + " viagem(ns).");
+    return;
+  }
+  escolhidas.forEach(l => {
+    dados.registros.push({
+      id: novoId(), caminhaoId: estado.caminhaoId, tipo: "viagem", criadoEm: Date.now(),
+      data: l.data, cte: String(l.cte || "").trim(), local: (l.local || "").trim(),
+      valor: l.valor, anexo: l.arquivo
+    });
+  });
+  const primeira = escolhidas[0].data.split("-");
+  estado.ano = +primeira[0]; estado.mes = +primeira[1];
+  salvar();
+  dlgImportar.close();
+  render();
+  aviso(escolhidas.length === 1 ? "Viagem salva." : escolhidas.length + " viagens salvas.");
+});
+
+/* ---------------- início ---------------- */
+render();
+
+/* Guarda o programa inteiro no aparelho, para abrir sem internet. */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+<script src="lib/jspdf.umd.min.js"></script>
+<script src="lib/jspdf.plugin.autotable.min.js"></script>
+</body>
+</html>

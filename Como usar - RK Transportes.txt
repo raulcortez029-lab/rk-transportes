@@ -1,0 +1,120 @@
+RK TRANSPORTES — controle de viagens e despesas
+================================================
+
+COMO ABRIR
+  Dê dois cliques no arquivo "RK Transportes.html".
+  Ele abre no navegador (use o Google Chrome de preferência).
+  Dica: com o programa aberto no Chrome, use o menu "..." > Transmitir,
+  salvar e compartilhar > Criar atalho, para deixar um ícone na sua área
+  de trabalho.
+
+O CAMINHO DENTRO DO PROGRAMA
+  Tela inicial (placas) > escolher a placa > Viagens ou Despesas >
+  escolher mês e ano > preencher ou consultar a tabela.
+
+CADASTRAR UM CAMINHÃO
+  Na tela inicial, clique em "Cadastrar caminhão", digite a placa e salve.
+  Para mudar ou apagar depois: abra a placa e vá até o quadro
+  "Gerenciar este caminhão", logo abaixo de Viagens e Despesas,
+  com os botões "Editar placa" e "Excluir caminhão".
+  Excluir um caminhão manda ele para a lixeira junto com todos os
+  registros; nada é perdido enquanto estiver lá.
+
+LANÇAR UMA VIAGEM
+  Abra a placa > Viagens > confira o mês > "Adicionar viagem".
+  Campos: data, nº do CT-e, local e valor do frete.
+  O total dos fretes do mês é somado sozinho no rodapé da tabela.
+
+ENVIAR O CT-e (o programa preenche para você)
+  Abra a placa > Viagens > botão "Enviar CT-e".
+  Escolha um ou vários arquivos de uma vez. O que ele faz com cada tipo:
+    - PDF do DACTE  -> lê data de emissão, nº do CT-e, destino da
+                       prestação e o valor de "Frete Peso".
+    - XML do CT-e   -> lê os mesmos campos direto do arquivo (mais exato).
+    - Planilha CSV  -> lê uma viagem por linha (colunas data, CT-e,
+                       local e valor). No Excel: Arquivo > Salvar como > CSV.
+    - Foto/imagem   -> não dá para ler o que está escrito na foto; a linha
+                       abre em branco para você preencher.
+    - Outros tipos  -> aceitos, mas abrem em branco para preencher.
+  Depois de ler, abre a tela "Conferir antes de salvar": todos os campos
+  são editáveis ali, dá para trocar o valor pelo total dos serviços,
+  desmarcar um documento ou completar o que faltou. Nada entra na tabela
+  antes de você clicar em "Salvar viagens".
+  Avisos que podem aparecer: documento de outra placa, ou CT-e já lançado
+  (esse já vem desmarcado, para não duplicar).
+  Observação: o arquivo em si não fica guardado, apenas as informações
+  lidas dele (o nome do arquivo fica anotado no registro).
+
+LANÇAR UMA DESPESA
+  Abra a placa > Despesas > "Adicionar despesa".
+  Campos: data, tipo (Serviço ou Diária), descrição e valor.
+  No rodapé aparecem os três totais:
+    - Total dos serviços (sem diárias)
+    - Total de diárias
+    - Total geral (serviços + diárias)
+
+CORRIGIR OU EXCLUIR
+  Tudo é editável: placa, apelido, data, nº do CT-e, local, valor,
+  serviço e o tipo da despesa.
+  Use o lápis para editar e a lixeira para excluir (pede confirmação).
+  Os totais se atualizam sozinhos.
+
+MENU (os 3 risquinhos no canto superior direito)
+  Reúne tudo o que não é do dia a dia:
+    - Dashboard
+    - Lixeira (mostra o número de itens guardados)
+    - Backup
+
+DASHBOARD
+  Menu > Dashboard. Escolha o mês na barra do topo e veja:
+    - Fretes, Despesas e Saldo do mês (saldo = fretes menos despesas).
+    - Gráfico dos últimos 6 meses, comparando fretes e despesas.
+    - Quanto das despesas foi serviço e quanto foi diária.
+    - Cada caminhão do mês: fretes, despesas e saldo.
+  Os números somam todos os caminhões, menos no último bloco.
+
+LIXEIRA (nada some de vez sem você mandar)
+  Menu > Lixeira, com o número de itens guardados.
+  O que você exclui (caminhão, viagem ou despesa) vai para lá e fica
+  guardado pelo tempo que precisar - não esvazia sozinho.
+  Em cada item:
+    - "Restaurar" devolve o registro para a tabela de origem.
+      Ao restaurar um caminhão, as viagens e despesas dele voltam junto.
+    - "Excluir definitivamente" apaga de vez, sem volta (pede confirmação).
+    - "Esvaziar lixeira" apaga tudo o que está guardado lá.
+
+MESES ANTERIORES
+  Use as setas < > ou escolha o mês e o ano na barra.
+  Nada é apagado ao trocar de mês: cada mês guarda os seus registros.
+
+VER A TABELA PRONTA
+  Botão "Ver tabela": mostra a tabela do mês em tela cheia, com placa,
+  período, os lançamentos e os totais - feita para ler no celular.
+  Para baixar, use os botões de exportar que ficam logo abaixo dela.
+
+EXPORTAR
+  "Exportar PDF" baixa o relatório em PDF (várias páginas se precisar).
+  "Baixar Excel (.xlsx)" baixa a planilha com as colunas prontas,
+  datas como data e valores como número, incluindo os totais.
+  Os arquivos vão para a pasta Downloads.
+
+ONDE OS DADOS FICAM
+  Os registros ficam salvos no navegador deste computador (não vão para
+  a internet e não somem ao fechar o programa).
+  ATENÇÃO: não há sincronização entre computador e celular. Se abrir o
+  programa em outro aparelho ou em outro navegador, a lista começa vazia.
+  Se limpar os dados de navegação do navegador, os registros vão junto.
+
+BACKUP (IMPORTANTE)
+  Menu > Backup:
+    - "Baixar cópia de segurança" salva um arquivo .json com tudo.
+    - "Restaurar de um arquivo" recoloca esses dados (substitui o que
+      estiver salvo no aparelho).
+  Faça isso de vez em quando e guarde o arquivo em um lugar seguro.
+  É também assim que você leva os dados para outro computador.
+
+PRECISA DE INTERNET?
+  Para lançar, consultar e baixar o Excel, não.
+  Para gerar o PDF e para ler o CT-e em PDF, sim (o programa busca as
+  ferramentas de leitura na internet). Sem internet, o botão de PDF abre
+  a versão para impressão, onde você escolhe "Salvar como PDF".
