@@ -25,8 +25,23 @@ LANÇAR UMA VIAGEM
   Campos: data, nº do CT-e, local e valor do frete.
   O total dos fretes do mês é somado sozinho no rodapé da tabela.
 
-ENVIAR O CT-e (o programa preenche para você)
-  Abra a placa > Viagens > botão "Enviar CT-e".
+ENVIAR DOCUMENTOS (o programa preenche para você)
+  Dois caminhos:
+    - Tela inicial > "Enviar documentos": serve para qualquer caminhão.
+      O programa lê a placa de cada documento e manda para o caminhão
+      certo sozinho. Se não achar a placa, você escolhe na hora.
+    - Abra a placa > Viagens > "Enviar CT-e": já vem com aquele caminhão.
+
+  UM PDF COM VÁRIOS DOCUMENTOS
+  Não precisa separar nada. O programa acha cada CT-e ou nota pela chave
+  de acesso e separa por documento, mesmo que um deles tenha várias
+  páginas. Cada documento vira uma linha na tela de conferência.
+
+  DOCUMENTO REPETIDO
+  Se o documento já estiver lançado, aparece "Este documento já está
+  cadastrado", com o número e o caminhão onde ele está, e a linha fica
+  bloqueada. Os outros documentos do mesmo PDF entram normalmente.
+
   Escolha um ou vários arquivos de uma vez. O que ele faz com cada tipo:
     - PDF do DACTE  -> lê data de emissão, nº do CT-e, destino da
                        prestação e o valor de "Frete Peso".
@@ -44,6 +59,17 @@ ENVIAR O CT-e (o programa preenche para você)
   (esse já vem desmarcado, para não duplicar).
   Observação: o arquivo em si não fica guardado, apenas as informações
   lidas dele (o nome do arquivo fica anotado no registro).
+
+BUSCAR (a lupa na tela inicial)
+  O campo de busca fica no alto da tela inicial. Dá para procurar por:
+    - Cidade: "curitiba" mostra as viagens que passaram por lá, dizendo
+      se foi origem ou destino, com caminhão, data e valor.
+    - Placa: "PLK8D51" traz tudo daquele caminhão.
+    - Documento: "118553" acha o CT-e ou a NFF.
+    - Data: "03/09/2026", "setembro de 2026", "09/2026" ou "2026".
+    - Período: "01/09/2026 a 30/09/2026".
+  Tocar em um resultado abre o mês daquele caminhão.
+  Se errar a digitação, ele sugere: "Você quis dizer Curitiba?".
 
 LANÇAR UMA DESPESA
   Abra a placa > Despesas > "Adicionar despesa".

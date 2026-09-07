@@ -104,6 +104,39 @@ button{cursor:pointer}
 .btn--perigo:hover{background:#7d221a}
 .btn[disabled]{opacity:.45;pointer-events:none}
 
+/* ---------- busca ---------- */
+.busca{position:relative;margin-bottom:18px}
+.busca svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--cinza-texto);pointer-events:none}
+.busca input{
+  width:100%;padding:14px 44px;border-radius:12px;border:1px solid var(--cinza-linha);
+  background:var(--branco);font-size:16px;box-shadow:var(--sombra);
+}
+.busca input:focus{outline:none;border-color:var(--azul);box-shadow:0 0 0 3px rgba(27,74,122,.14)}
+.busca__limpar{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;
+  border:0;background:var(--cinza);border-radius:50%;color:var(--cinza-texto);font-size:15px;line-height:1;
+}
+.busca__limpar:hover{background:var(--cinza-linha);color:var(--preto)}
+.busca-cabecalho{font-size:13.5px;color:var(--cinza-texto);margin:0 0 12px}
+.achado{
+  width:100%;display:flex;gap:12px;align-items:flex-start;text-align:left;
+  background:var(--branco);border:1px solid var(--cinza-linha);border-radius:12px;
+  padding:13px 15px;margin-bottom:10px;box-shadow:var(--sombra);
+}
+.achado:hover{border-color:var(--azul)}
+.achado__corpo{flex:1;min-width:0}
+.achado__topo{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:3px}
+.achado__titulo{font-family:var(--display);font-weight:600;font-size:15px}
+.achado__valor{font-family:var(--mono);font-weight:600;font-size:14.5px;white-space:nowrap}
+.achado__linha{font-size:13.5px;color:var(--cinza-texto);word-break:break-word}
+.achado__linha b{color:var(--preto);font-weight:600}
+.marca-tipo{
+  font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-family:var(--display);
+  padding:3px 8px;border-radius:999px;background:var(--cinza);color:var(--azul);flex:none;margin-top:2px;
+}
+.marca-tipo--despesa{background:#EDF0F4;color:#5A6473}
+.sugestao{background:none;border:0;color:var(--azul);font-weight:600;font-size:15px;text-decoration:underline;padding:8px 0}
+
 /* ---------- placas (tela inicial) ---------- */
 .placas{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
 .placa{
@@ -377,11 +410,12 @@ dialog.largo{width:min(880px,calc(100vw - 24px))}
 .marcar b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw}
 .nota{font-size:12.5px;color:var(--cinza-texto)}
 .nota--alerta{color:var(--alerta);font-weight:600}
-.grade4{display:grid;grid-template-columns:130px 130px 1fr 150px;gap:10px}
-.grade4 .campo{margin:0}
-.grade4 .campo input{padding:9px 11px;font-size:14.5px}
-.grade4 .moeda input{padding-left:34px}
-.grade4 .moeda span{left:11px;font-size:13.5px}
+.grade-import{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:10px}
+.grade-import .campo{margin:0;min-width:0}
+.grade-import .campo--largo{grid-column:span 2}
+.grade-import input,.grade-import select{padding:9px 11px;font-size:14.5px}
+.grade-import .moeda input{padding-left:34px}
+.grade-import .moeda span{left:11px;font-size:13.5px}
 .link{background:none;border:0;padding:0;color:var(--azul);font-size:12.5px;font-weight:600;text-decoration:underline;text-align:left}
 .carregando{padding:26px 8px;text-align:center;color:var(--cinza-texto);font-size:15px}
 
@@ -428,8 +462,7 @@ table.tv{width:100%;border-collapse:collapse}
   dialog.folha-dlg[open]{inset:0;width:100%;max-width:none;height:100dvh;max-height:none;border-radius:0}
   dialog.folha-dlg[open] .folha-barra{padding-top:calc(12px + env(safe-area-inset-top))}
   dialog.folha-dlg[open] .folha-area{padding-bottom:env(safe-area-inset-bottom)}
-  .grade4{grid-template-columns:1fr 1fr}
-  .grade4 .campo:nth-child(3),.grade4 .campo:nth-child(4){grid-column:span 2}
+  .grade-import{grid-template-columns:1fr 1fr}
   .acoes-barra .btn{min-width:0}
   .folha-barra .btn{flex:1;justify-content:center}
   .area{padding:18px 14px 48px}
@@ -762,6 +795,7 @@ const ICONES = {
   sair: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>',
   backup: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 21h16"/></svg>',
   caminhao: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6h11v9H1z"/><path d="M12 9h4.5l3.5 3.5V15H12z"/><circle cx="5.5" cy="17.5" r="2"/><circle cx="16.5" cy="17.5" r="2"/></svg>',
+  lupa: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
   clipe: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 1 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>',
   papel: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>'
 };
@@ -797,6 +831,7 @@ function render(){
   }else if(estado.vista === "inicio"){
     trilha.innerHTML = "";
     tela.innerHTML = telaInicio();
+    atualizarBusca();
   }else if(estado.vista === "caminhao"){
     trilha.innerHTML = `<button class="voltar" data-acao="inicio">${ICONES.seta} Caminhões</button>
       <span class="migalha">Caminhão <b>${esc(c.placa)}</b></span>`;
@@ -809,6 +844,153 @@ function render(){
   }
 
   rodape.innerHTML = "";
+}
+
+/* ---------------- busca ---------------- */
+let termoBusca = "";
+const semAcento = t => String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+/* Entende "03/09/2026", "09/2026", "2026", "setembro de 2026". */
+function comoData(t){
+  t = t.trim();
+  let m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m){ const d = `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`; return { de:d, ate:d }; }
+  m = t.match(/^(\d{1,2})\/(\d{4})$/);
+  if(m){ const p = `${m[2]}-${m[1].padStart(2,"0")}`; return { de:p+"-01", ate:p+"-31" }; }
+  if(/^\d{4}$/.test(t)) return { de:t+"-01-01", ate:t+"-12-31" };
+  const partes = t.split(/\s+/);
+  const mes = MESES.findIndex(nome => semAcento(nome) === partes[0]);
+  if(mes >= 0){
+    const ano = partes.find(x => /^\d{4}$/.test(x)) || String(estado.ano);
+    const p = `${ano}-${String(mes+1).padStart(2,"0")}`;
+    return { de:p+"-01", ate:p+"-31" };
+  }
+  return null;
+}
+
+function analisarBusca(consulta){
+  const t = semAcento(consulta);
+  const intervalo = t.match(/^(.+?)\s+(?:a|ate|até|-)\s+(.+)$/);
+  if(intervalo){
+    const de = comoData(intervalo[1]), ate = comoData(intervalo[2]);
+    if(de && ate) return { de: de.de, ate: ate.ate, texto: [] };
+  }
+  const unica = comoData(t);
+  if(unica) return { de: unica.de, ate: unica.ate, texto: [] };
+  return { de: null, ate: null, texto: t.split(/\s+/).filter(Boolean) };
+}
+
+function buscar(consulta){
+  const { de, ate, texto } = analisarBusca(consulta);
+  const achados = [];
+  dados.registros.forEach(r => {
+    const c = dados.caminhoes.find(x => x.id === r.caminhaoId);
+    if(de && (!r.data || r.data < de || r.data > ate)) return;
+    const procuravel = semAcento([
+      c ? c.placa : "", c ? c.apelido : "", r.local, r.origem, r.servico,
+      r.cte ? docTexto(r) : "", r.data ? dataBR(r.data) : "",
+      r.tipo === "viagem" ? "viagem frete" : "despesa", r.diaria ? "diaria" : ""
+    ].join(" "));
+    if(texto.length && !texto.every(termo => procuravel.includes(termo))) return;
+    achados.push({ r, c, casouOrigem: texto.some(t => semAcento(r.origem).includes(t)),
+                   casouDestino: texto.some(t => semAcento(r.local).includes(t)) });
+  });
+  return achados.sort((a,b) => String(b.r.data).localeCompare(String(a.r.data)));
+}
+
+/* "Curitba" → "Curitiba" */
+function distanciaTexto(a, b){
+  const m = a.length, n = b.length;
+  if(!m || !n) return Math.max(m, n);
+  let anterior = Array.from({length:n+1}, (_,j) => j);
+  for(let i = 1; i <= m; i++){
+    const atual = [i];
+    for(let j = 1; j <= n; j++){
+      atual[j] = Math.min(anterior[j] + 1, atual[j-1] + 1, anterior[j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+    }
+    anterior = atual;
+  }
+  return anterior[n];
+}
+
+function sugerirPalavra(consulta){
+  const alvo = semAcento(consulta);
+  if(alvo.length < 3) return null;
+  const vocabulario = new Set();
+  dados.registros.forEach(r => {
+    [r.local, r.origem, r.servico].forEach(v =>
+      String(v||"").split(/[\/,–-]/).forEach(parte => {
+        const palavra = parte.trim();
+        if(palavra.length > 2) vocabulario.add(palavra);
+      }));
+  });
+  dados.caminhoes.forEach(c => { vocabulario.add(c.placa); if(c.apelido) vocabulario.add(c.apelido); });
+
+  let melhor = null, menor = 99;
+  vocabulario.forEach(palavra => {
+    const d = distanciaTexto(alvo, semAcento(palavra));
+    if(d < menor){ menor = d; melhor = palavra; }
+  });
+  const limite = Math.max(1, Math.floor(alvo.length / 3));
+  return (melhor && menor > 0 && menor <= limite) ? melhor : null;
+}
+
+function resultadosHTML(consulta){
+  const achados = buscar(consulta);
+  if(!achados.length){
+    const dica = sugerirPalavra(consulta.trim().split(/\s+/)[0]);
+    return `<div class="cartao"><div class="vazio">
+      <strong>Nada encontrado para "${esc(consulta.trim())}"</strong>
+      ${dica ? `<button class="sugestao" data-acao="sugestao" data-termo="${esc(dica)}">Você quis dizer ${esc(dica)}?</button>`
+             : "Tente a cidade, a placa, o número do documento ou uma data."}
+    </div></div>`;
+  }
+
+  const total = achados.filter(a => a.r.tipo === "viagem").reduce((s,a) => s + (+a.r.valor||0), 0);
+  const gasto = achados.filter(a => a.r.tipo === "despesa").reduce((s,a) => s + (+a.r.valor||0), 0);
+
+  const linhas = achados.slice(0, 80).map(a => {
+    const r = a.r, ehViagem = r.tipo === "viagem";
+    const lugar = ehViagem
+      ? (r.origem
+          ? `Origem <b${a.casouOrigem ? "" : ""}>${esc(r.origem)}</b> → Destino <b>${esc(r.local||"—")}</b>`
+          : `Destino <b>${esc(r.local||"—")}</b>`)
+      : esc(r.servico||"—") + (r.diaria ? " · diária" : "");
+    return `
+      <button class="achado" data-acao="abrirRegistro" data-id="${r.id}">
+        <span class="marca-tipo ${ehViagem ? "" : "marca-tipo--despesa"}">${ehViagem ? "Viagem" : "Despesa"}</span>
+        <span class="achado__corpo">
+          <span class="achado__topo">
+            <span class="achado__titulo">${dataBR(r.data)} · ${esc(a.c ? a.c.placa : "—")}</span>
+            <span class="achado__valor">${brl(r.valor)}</span>
+          </span>
+          <span class="achado__linha">${ehViagem && r.cte ? esc(docTexto(r)) + " · " : ""}${lugar}</span>
+        </span>
+      </button>`;
+  }).join("");
+
+  return `
+    <p class="busca-cabecalho">
+      ${plural(achados.length, "resultado", "resultados")}${achados.length > 80 ? " (mostrando os 80 mais recentes)" : ""}
+      ${total ? ` · fretes ${brl(total)}` : ""}${gasto ? ` · despesas ${brl(gasto)}` : ""}
+    </p>
+    ${linhas}`;
+}
+
+function atualizarBusca(){
+  const campo = document.getElementById("campoBusca");
+  if(!campo) return;
+  termoBusca = campo.value;
+  const area = document.getElementById("areaBusca");
+  const placas = document.getElementById("areaPlacas");
+  const limpar = document.getElementById("limparBusca");
+  if(limpar) limpar.hidden = !termoBusca;
+  if(termoBusca.trim().length < 2){
+    area.hidden = true; area.innerHTML = ""; placas.hidden = false;
+    return;
+  }
+  area.hidden = false; placas.hidden = true;
+  area.innerHTML = resultadosHTML(termoBusca);
 }
 
 /* ---------------- tela 1: caminhões ---------------- */
@@ -839,10 +1021,21 @@ function telaInicio(){
       <div>
         <h1 class="titulo">Escolha o caminhão</h1>
       </div>
-      ${dados.caminhoes.length ? '<button class="btn" data-acao="novoCaminhao">Cadastrar caminhão</button>' : ""}
+      ${dados.caminhoes.length ? `<div class="ferramentas" style="margin:0">
+        <button class="btn btn--claro" data-acao="importarInicio">${ICONES.clipe} Enviar documentos</button>
+        <button class="btn" data-acao="novoCaminhao">Cadastrar caminhão</button>
+      </div>` : ""}
     </div>
-    ${dados.caminhoes.length ? `<div class="placas">${cartoes}
-      <button class="placa placa--nova" data-acao="novoCaminhao">+ Cadastrar caminhão</button></div>` : vazio}
+    ${dados.caminhoes.length ? `
+      <div class="busca">
+        ${ICONES.lupa}
+        <input id="campoBusca" type="search" autocomplete="off" enterkeyhint="search"
+               placeholder="Buscar cidade, placa, documento ou data" value="${esc(termoBusca)}">
+        <button class="busca__limpar" id="limparBusca" data-acao="limparBusca" ${termoBusca ? "" : "hidden"} aria-label="Limpar busca">✕</button>
+      </div>
+      <div id="areaBusca" hidden></div>` : ""}
+    <div id="areaPlacas">${dados.caminhoes.length ? `<div class="placas">${cartoes}
+      <button class="placa placa--nova" data-acao="novoCaminhao">+ Cadastrar caminhão</button></div>` : vazio}</div>
   `;
 }
 
@@ -1462,11 +1655,35 @@ document.addEventListener("click", e => {
         aviso("Lixeira esvaziada.");
       });
   }
-  if(acao === "importarCTe") return document.getElementById("arquivoCTe").click();
+  if(acao === "importarCTe" || acao === "importarInicio"){
+    caminhaoDaImportacao = acao === "importarCTe" ? estado.caminhaoId : "";
+    return document.getElementById("arquivoCTe").click();
+  }
+  if(acao === "limparBusca"){
+    const campo = document.getElementById("campoBusca");
+    if(campo){ campo.value = ""; campo.focus(); }
+    return atualizarBusca();
+  }
+  if(acao === "sugestao"){
+    const campo = document.getElementById("campoBusca");
+    if(campo) campo.value = alvo.dataset.termo || "";
+    return atualizarBusca();
+  }
+  if(acao === "abrirRegistro"){
+    const r = dados.registros.find(x => x.id === id);
+    if(!r) return;
+    const partes = String(r.data || "").split("-");
+    if(partes.length === 3){ estado.ano = +partes[0]; estado.mes = +partes[1]; }
+    return ir("tabela", { caminhaoId: r.caminhaoId, tipo: r.tipo });
+  }
   if(acao === "verTabela") return verTabela();
   if(acao === "resumoPDF") return resumoPDF();
   if(acao === "exportarPDF") return exportarPDF();
   if(acao === "exportarExcel") return exportarExcel();
+});
+
+document.addEventListener("input", e => {
+  if(e.target.id === "campoBusca") atualizarBusca();
 });
 
 document.addEventListener("change", e => {
@@ -2045,6 +2262,7 @@ const PDFJS_URL = "lib/pdf.min.js";
 const PDFJS_WORKER = "lib/pdf.worker.min.js";
 const dlgImportar = document.getElementById("dlgImportar");
 let pendentes = [];
+let caminhaoDaImportacao = "";
 
 async function carregarPdfJs(){
   if(window.pdfjsLib) return window.pdfjsLib;
@@ -2081,32 +2299,59 @@ async function itensDoPDF(arquivo){
 }
 
 const ehDinheiro = t => /^R?\$?\s*\d{1,3}(\.\d{3})*,\d{2}$/.test(String(t).trim());
+const soLetrasNumeros = t => String(t||"").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
 
-/* Lê os campos do DACTE pela posição de cada rótulo na página. */
-function lerDACTE(itens){
-  const r = { placas: [] };
-  const p1 = itens.filter(i => i.p === 1);
-  const acha = re => p1.find(i => re.test(i.t));
-
-  /* chave de acesso: os 44 dígitos trazem o número do CT-e e o mês da emissão */
-  let chave = null;
+/* Chave de acesso: 44 dígitos. O modelo (posições 21 e 22) diz se é
+   CT-e (57) ou nota fiscal (55). */
+function chaveDe(itens){
   for(const i of itens){
     const d = i.t.replace(/\D/g, "");
-    if(d.length === 44 && d.slice(20,22) === "57"){ chave = d; break; }
+    if(d.length === 44 && (d.slice(20,22) === "57" || d.slice(20,22) === "55")) return d;
   }
-  if(!chave){
-    const juntos = itens.map(i => i.t).join(" ");
-    const candidatas = (juntos.match(/(?:\d[ .-]?){43}\d/g) || []).map(c => c.replace(/\D/g,""));
-    chave = candidatas.find(c => c.length === 44 && c.slice(20,22) === "57") || null;
-  }
+  const juntos = itens.map(i => i.t).join(" ");
+  const candidatas = (juntos.match(/(?:\d[ .-]?){43}\d/g) || []).map(c => c.replace(/\D/g, ""));
+  return candidatas.find(c => c.length === 44 && (c.slice(20,22) === "57" || c.slice(20,22) === "55")) || null;
+}
+
+/* Um PDF pode trazer vários documentos, e cada documento pode ocupar mais
+   de uma página. A separação segue a chave de acesso: página sem chave é
+   continuação do documento anterior. */
+function separarDocumentos(itens){
+  const paginas = [...new Set(itens.map(i => i.p))].sort((a,b) => a - b);
+  const grupos = [];
+  paginas.forEach(pg => {
+    const daPagina = itens.filter(i => i.p === pg);
+    const chave = chaveDe(daPagina);
+    const ultimo = grupos[grupos.length - 1];
+    if(chave && (!ultimo || ultimo.chave !== chave)){
+      grupos.push({ chave, paginas:[pg], itens: daPagina.slice() });
+    }else if(ultimo){
+      ultimo.paginas.push(pg);
+      ultimo.itens.push(...daPagina);
+    }else{
+      grupos.push({ chave: null, paginas:[pg], itens: daPagina.slice() });
+    }
+  });
+  return grupos;
+}
+
+/* Lê os campos de um documento pela posição de cada rótulo na página. */
+function lerDocumento(grupo){
+  const r = { placas: [] };
+  const primeira = grupo.paginas[0];
+  const p1 = grupo.itens.filter(i => i.p === primeira);
+  const acha = re => p1.find(i => re.test(i.t));
+  const semEspaco = t => t.toUpperCase().replace(/[\s.]/g, "");
+
   let anoChave = null, mesChave = null;
-  if(chave){
-    r.cte = String(parseInt(chave.slice(25,34), 10));
-    anoChave = 2000 + parseInt(chave.slice(2,4), 10);
-    mesChave = parseInt(chave.slice(4,6), 10);
+  if(grupo.chave){
+    r.doc = grupo.chave.slice(20,22) === "55" ? "nff" : "cte";
+    r.cte = String(parseInt(grupo.chave.slice(25,34), 10));
+    anoChave = 2000 + parseInt(grupo.chave.slice(2,4), 10);
+    mesChave = parseInt(grupo.chave.slice(4,6), 10);
   }
 
-  /* número do CT-e sem a chave: rótulo "Nº Documento" ou "NÚMERO" */
+  /* número sem a chave: rótulo "Nº Documento" ou "NÚMERO" */
   if(!r.cte){
     const rot = acha(/N[ºo°]?\s*Documento/i) || acha(/^N[ÚU]MERO$/i);
     if(rot){
@@ -2126,32 +2371,37 @@ function lerDACTE(itens){
   }
   if(!data){
     const todas = [];
-    itens.forEach(i => (i.t.match(/\b\d{2}\/\d{2}\/\d{4}\b/g) || []).forEach(x => todas.push(x)));
-    const iguais = anoChave ? todas.filter(d => d.slice(3) === String(mesChave).padStart(2,"0") + "/" + anoChave) : [];
-    const escolhida = iguais[0] || todas[0];
+    grupo.itens.forEach(i => (i.t.match(/\b\d{2}\/\d{2}\/\d{4}\b/g) || []).forEach(x => todas.push(x)));
+    const doMes = anoChave ? todas.filter(d => d.slice(3) === String(mesChave).padStart(2,"0") + "/" + anoChave) : [];
+    const escolhida = doMes[0] || todas[0];
     if(escolhida) data = escolhida.match(/\b(\d{2})\/(\d{2})\/(\d{4})\b/);
   }
   if(data) r.data = `${data[3]}-${data[2]}-${data[1]}`;
 
-  /* local: o destino da prestação */
-  const rotDestino = p1.find(i => /DESTINO/i.test(i.t) && /PRESTA/i.test(i.t)) || acha(/^DESTINO/i);
-  if(rotDestino){
-    const v = p1.filter(i => i.y < rotDestino.y && i.y > rotDestino.y - 17 && i.x > rotDestino.x - 8 && i.x < rotDestino.x + 200
+  /* cidade abaixo de um rótulo (origem / destino da prestação) */
+  const cidadeAbaixoDe = rotulo => {
+    if(!rotulo) return "";
+    const v = p1.filter(i => i.y < rotulo.y && i.y > rotulo.y - 17 && i.x > rotulo.x - 8 && i.x < rotulo.x + 200
                           && i.t.length > 2 && !/^\d+$/.test(i.t) && !/^(IBGE|CEP|UF|FONE)$/i.test(i.t))
-                .sort((a,b) => (rotDestino.y - a.y) - (rotDestino.y - b.y) || a.x - b.x)[0];
-    if(v) r.local = v.t;
+                .sort((a,b) => (rotulo.y - a.y) - (rotulo.y - b.y) || a.x - b.x)[0];
+    return v ? v.t : "";
+  };
+  r.local  = cidadeAbaixoDe(p1.find(i => /DESTINO/i.test(i.t) && /PRESTA/i.test(i.t)) || acha(/^DESTINO/i));
+  r.origem = cidadeAbaixoDe(p1.find(i => /ORIGEM/i.test(i.t) && /PRESTA/i.test(i.t)) || acha(/^ORIGEM/i));
+  if(!r.local){
+    const mun = acha(/MUNIC[ÍI]PIO\s*DE\s*(DESTINO|T[ÉE]RMINO)/i);
+    r.local = cidadeAbaixoDe(mun);
   }
 
-  /* valor: componente "Frete Peso"; guarda também o total dos serviços */
+  /* valor: no CT-e é o componente "Frete Peso"; guarda também o total */
   const rotFrete = acha(/frete\s*peso/i);
   if(rotFrete){
     const v = p1.filter(i => Math.abs(i.y - rotFrete.y) <= 3 && i.x > rotFrete.x + 10 && ehDinheiro(i.t))
                 .sort((a,b) => a.x - b.x)[0];
     if(v) r.valor = dinheiroParaNumero(v.t);
   }
-  const semEspaco = t => t.toUpperCase().replace(/[\s.]/g, "");
-  const rotTotal = p1.find(i => /VALORTOTALDOS/.test(semEspaco(i.t)))
-                || p1.find(i => /^VALORARECEBER|^VALORA$/.test(semEspaco(i.t)));
+  const rotTotal = p1.find(i => /VALORTOTALDOS?SERVI|VALORTOTALDANOTA|VALORTOTALDAPRESTA/.test(semEspaco(i.t)))
+                || p1.find(i => /^VALORARECEBER|^VALORA$|^VALORTOTAL$/.test(semEspaco(i.t)));
   if(rotTotal){
     const v = p1.filter(i => i.y < rotTotal.y && i.y > rotTotal.y - 28 && i.x > rotTotal.x - 40 && i.x < rotTotal.x + 230 && ehDinheiro(i.t))
                 .sort((a,b) => (rotTotal.y - a.y) - (rotTotal.y - b.y))[0];
@@ -2159,8 +2409,8 @@ function lerDACTE(itens){
   }
   if(r.valor == null && r.total != null) r.valor = r.total;
 
-  /* placas que aparecem no documento, para conferir se é o caminhão certo */
-  p1.forEach(i => {
+  /* placas que aparecem no documento, para achar o caminhão certo */
+  grupo.itens.forEach(i => {
     const t = i.t.trim().toUpperCase();
     if(/^[A-Z]{3}-?\d[A-Z]\d{2}$/.test(t) || /^[A-Z]{3}-?\d{4}$/.test(t)) r.placas.push(t.replace("-",""));
   });
@@ -2172,12 +2422,18 @@ function lerDACTE(itens){
 function lerXMLCTe(texto){
   const doc = new DOMParser().parseFromString(texto, "application/xml");
   const pega = nome => { const el = doc.getElementsByTagName(nome)[0]; return el ? el.textContent.trim() : ""; };
-  const r = { placas: [] };
-  const nCT = pega("nCT"); if(nCT) r.cte = String(parseInt(nCT, 10));
-  const emissao = pega("dhEmi") || pega("dEmi"); if(emissao) r.data = emissao.slice(0,10);
-  const municipio = pega("xMunFim"), uf = pega("UFFim");
-  if(municipio) r.local = uf ? municipio + "-" + uf : municipio;
-  const total = parseFloat(pega("vTPrest")); if(!isNaN(total)) r.total = total;
+  const r = { placas: [], doc: "cte" };
+  const nCT = pega("nCT") || pega("nNF");
+  if(nCT) r.cte = String(parseInt(nCT, 10));
+  if(!pega("nCT") && pega("nNF")) r.doc = "nff";
+  const emissao = pega("dhEmi") || pega("dEmi");
+  if(emissao) r.data = emissao.slice(0,10);
+  const destino = pega("xMunFim"), ufDestino = pega("UFFim");
+  if(destino) r.local = ufDestino ? destino + "-" + ufDestino : destino;
+  const origem = pega("xMunIni"), ufOrigem = pega("UFIni");
+  if(origem) r.origem = ufOrigem ? origem + "-" + ufOrigem : origem;
+  const total = parseFloat(pega("vTPrest") || pega("vNF"));
+  if(!isNaN(total)) r.total = total;
   const componentes = [...doc.getElementsByTagName("Comp")];
   const fretePeso = componentes.find(c => {
     const n = c.getElementsByTagName("xNome")[0];
@@ -2188,9 +2444,9 @@ function lerXMLCTe(texto){
     if(v) r.valor = parseFloat(v.textContent);
   }
   if(r.valor == null && r.total != null) r.valor = r.total;
-  [...doc.getElementsByTagName("placa")].forEach(p => r.placas.push(p.textContent.trim().toUpperCase()));
+  [...doc.getElementsByTagName("placa")].forEach(el => r.placas.push(el.textContent.trim().toUpperCase()));
   r.placas = [...new Set(r.placas)];
-  if(!r.cte && !r.data && !r.valor) throw new Error("xml-sem-cte");
+  if(!r.cte && !r.data && r.valor == null) throw new Error("xml-sem-cte");
   return r;
 }
 
@@ -2221,7 +2477,7 @@ function lerCSV(texto, nomeArquivo){
 
   let mapa = { data:0, cte:1, local:2, valor:3 }, primeira = 0;
   if(onde("data") >= 0 || onde("valor","frete") >= 0){
-    mapa = { data: onde("data"), cte: onde("ct-e","cte","documento","número","numero"),
+    mapa = { data: onde("data"), cte: onde("ct-e","cte","documento","número","numero","nff"),
              local: onde("local","destino","cidade","muni"), valor: onde("valor","frete") };
     primeira = 1;
   }
@@ -2233,8 +2489,8 @@ function lerCSV(texto, nomeArquivo){
     const valor = mapa.valor >= 0 ? dinheiroParaNumero(c[mapa.valor]) : 0;
     if(!data && !(valor > 0)) continue;
     achadas.push({
-      arquivo: `${nomeArquivo} · linha ${i + 1}`, incluir: true, placas: [], erro: "", aviso: "",
-      data, valor: valor > 0 ? valor : null, total: null,
+      arquivo: nomeArquivo, detalhe: "linha " + (i + 1), doc: "cte", placas: [],
+      data, valor: valor > 0 ? valor : null, total: null, origem: "",
       cte: mapa.cte >= 0 ? (c[mapa.cte] || "").trim() : "",
       local: mapa.local >= 0 ? (c[mapa.local] || "").trim() : ""
     });
@@ -2243,10 +2499,34 @@ function lerCSV(texto, nomeArquivo){
   return achadas;
 }
 
-async function analisarArquivo(arquivo){
+/* Acha o caminhão cadastrado que bate com alguma placa do documento. */
+function caminhaoPelaPlaca(placas){
+  for(const placa of placas || []){
+    const alvo = soLetrasNumeros(placa);
+    const achado = dados.caminhoes.find(c => soLetrasNumeros(c.placa) === alvo);
+    if(achado) return achado;
+  }
+  return null;
+}
+
+/* Documento já lançado antes, em qualquer caminhão. */
+function documentoJaCadastrado(tipoDocumento, numero){
+  if(!numero) return null;
+  const tipo = tipoDocumento === "nff" ? "nff" : "cte";
+  const registro = dados.registros.find(x =>
+    x.tipo === "viagem" && String(x.cte || "") === String(numero) && (x.doc || "cte") === tipo);
+  if(!registro) return null;
+  return { registro, caminhao: dados.caminhoes.find(c => c.id === registro.caminhaoId) || null };
+}
+
+async function analisarArquivo(arquivo, caminhaoPadrao){
   const nome = arquivo.name;
-  const linha = { arquivo: nome, incluir: true, data: "", cte: "", local: "", valor: null, total: null, placas: [], erro: "", aviso: "" };
-  let achadas = [linha];
+  const vazia = () => ({
+    arquivo: nome, detalhe: "", incluir: true, caminhaoId: caminhaoPadrao || "",
+    doc: "cte", data: "", cte: "", local: "", origem: "", valor: null, total: null,
+    placas: [], erro: "", aviso: "", travada: false
+  });
+  let achadas = [];
 
   const ehImagem = /^image\//.test(arquivo.type) || /\.(jpe?g|png|heic|heif|webp|gif|bmp|tiff?)$/i.test(nome);
   const ehTexto  = /\.(csv|txt|tsv)$/i.test(nome) || /^text\/(csv|plain|tab)/.test(arquivo.type);
@@ -2255,13 +2535,21 @@ async function analisarArquivo(arquivo){
 
   try{
     if(ehXML){
-      Object.assign(linha, lerXMLCTe(await arquivo.text()));
+      achadas = [Object.assign(vazia(), lerXMLCTe(await arquivo.text()))];
     }else if(ehPDF){
       const itens = await itensDoPDF(arquivo);
       if(!itens.length) throw new Error("sem-texto");
-      Object.assign(linha, lerDACTE(itens));
+      const grupos = separarDocumentos(itens);
+      achadas = grupos.map(g => {
+        const linha = Object.assign(vazia(), lerDocumento(g));
+        linha.detalhe = g.paginas.length > 1
+          ? `páginas ${g.paginas[0]}-${g.paginas[g.paginas.length-1]}`
+          : `página ${g.paginas[0]}`;
+        return linha;
+      });
+      if(!achadas.length) throw new Error("sem-texto");
     }else if(ehTexto){
-      achadas = lerCSV(await arquivo.text(), nome);
+      achadas = lerCSV(await arquivo.text(), nome).map(l => Object.assign(vazia(), l));
     }else if(ehImagem){
       throw new Error("imagem");
     }else{
@@ -2269,6 +2557,7 @@ async function analisarArquivo(arquivo){
     }
   }catch(e){
     const causa = e && e.message;
+    const linha = vazia();
     linha.erro = causa === "leitor-indisponivel"
       ? "Não consegui abrir o leitor de PDF. Preencha os campos aqui."
       : causa === "imagem"
@@ -2276,44 +2565,65 @@ async function analisarArquivo(arquivo){
         : causa === "sem-texto"
           ? "Este PDF é digitalizado (imagem). Preencha os campos aqui."
           : causa === "formato" || causa === "vazio"
-            ? "Não sei ler este tipo de arquivo. Preencha aqui, ou envie o PDF ou o XML do CT-e."
+            ? "Não sei ler este tipo de arquivo. Preencha aqui, ou envie o PDF ou o XML do documento."
             : "Não consegui ler este arquivo. Preencha os campos aqui.";
     linha.incluir = false;
     achadas = [linha];
   }
 
-  const c = caminhaoAtual();
+  /* caminhão pela placa do documento, conferência de repetidos e avisos */
   achadas.forEach(linha => {
-   if(!linha.erro){
-    if(linha.placas.length && !linha.placas.includes(c.placa.replace(/[^A-Za-z0-9]/g,"").toUpperCase())){
-      linha.aviso = "Atenção: o documento é da placa " + linha.placas.join(" / ") + ".";
+    if(linha.erro) return;
+    const doDocumento = caminhaoPelaPlaca(linha.placas);
+    if(doDocumento) linha.caminhaoId = doDocumento.id;
+    else if(!linha.caminhaoId && linha.placas.length){
+      linha.aviso = "Não achei a placa " + linha.placas.join(" / ") + " nos caminhões cadastrados. Escolha o caminhão.";
     }
-    const repetido = linha.cte && dados.registros.find(x => x.caminhaoId === c.id && x.tipo === "viagem" && String(x.cte) === String(linha.cte));
+    const repetido = documentoJaCadastrado(linha.doc, linha.cte);
     if(repetido){
-      linha.aviso = "CT-e " + linha.cte + " já lançado em " + dataBR(repetido.data) + ".";
+      linha.aviso = `Este documento já está cadastrado — ${tipoDocTexto(linha)} ${linha.cte}` +
+        (repetido.caminhao ? `, no caminhão ${repetido.caminhao.placa}` : "") +
+        (repetido.registro.data ? `, em ${dataBR(repetido.registro.data)}` : "") + ".";
       linha.incluir = false;
       linha.travada = true;
     }
-   }
   });
   return achadas;
 }
 
 function desenharImportacao(){
   const corpo = document.getElementById("corpoImportar");
+  const opcoesCaminhao = c => dados.caminhoes.map(x =>
+    `<option value="${x.id}" ${x.id === c ? "selected" : ""}>${esc(x.placa)}</option>`).join("");
+
   corpo.innerHTML = pendentes.map((l, i) => `
     <div class="import-linha" data-i="${i}" data-fora="${l.incluir ? "0" : "1"}">
       <div class="import-topo">
-        <label class="marcar"><input type="checkbox" data-campo="incluir" ${l.incluir ? "checked" : ""}> <b>${esc(l.arquivo)}</b></label>
-        <span class="nota ${l.erro || l.aviso ? "nota--alerta" : ""}">${esc(l.erro || l.aviso || (l.cte ? "CT-e " + l.cte + " lido" : "Confira os campos"))}</span>
+        <label class="marcar">
+          <input type="checkbox" data-campo="incluir" ${l.incluir ? "checked" : ""} ${l.travada ? "disabled" : ""}>
+          <b>${l.cte ? esc(tipoDocTexto(l) + " " + l.cte) : esc(l.arquivo)}</b>
+        </label>
+        <span class="nota ${l.erro || l.aviso ? "nota--alerta" : ""}">${esc(l.erro || l.aviso || [l.arquivo, l.detalhe].filter(Boolean).join(" · "))}</span>
       </div>
-      <div class="grade4">
+      <div class="grade-import">
+        <div class="campo campo--largo"><label>Caminhão</label>
+          <select data-campo="caminhaoId">
+            <option value="">Escolher…</option>
+            ${opcoesCaminhao(l.caminhaoId)}
+          </select>
+        </div>
         <div class="campo"><label>Data</label><input type="date" data-campo="data" value="${esc(l.data)}"></div>
-        <div class="campo"><label>Nº do CT-e</label><input data-campo="cte" inputmode="numeric" value="${esc(l.cte)}"></div>
-        <div class="campo"><label>Local</label><input data-campo="local" value="${esc(l.local)}"></div>
+        <div class="campo"><label>Tipo</label>
+          <select data-campo="doc">
+            <option value="cte" ${l.doc !== "nff" ? "selected" : ""}>CT-e</option>
+            <option value="nff" ${l.doc === "nff" ? "selected" : ""}>NFF</option>
+          </select>
+        </div>
+        <div class="campo"><label>Número</label><input data-campo="cte" inputmode="numeric" value="${esc(l.cte)}"></div>
+        <div class="campo campo--largo"><label>Local</label><input data-campo="local" value="${esc(l.local)}"></div>
         <div class="campo"><label>Valor do frete</label>
           <div class="moeda"><span>R$</span><input data-campo="valor" inputmode="decimal" value="${l.valor != null ? numero(l.valor) : ""}"></div>
-          ${l.total != null && l.total !== l.valor ? `<button type="button" class="link" data-total="${l.total}">Usar o total dos serviços: ${brl(l.total)}</button>` : ""}
+          ${l.total != null && l.total !== l.valor ? `<button type="button" class="link" data-total="${l.total}">Usar o total: ${brl(l.total)}</button>` : ""}
         </div>
       </div>
     </div>`).join("");
@@ -2342,8 +2652,8 @@ document.getElementById("corpoImportar").addEventListener("input", e => {
   if(campo === "valor") l.valor = dinheiroParaNumero(e.target.value);
   else if(campo) l[campo] = e.target.value;
 
-  /* preencheu à mão o que faltava: já marca a linha para ser salva */
-  if(!l.incluir && l.data && l.valor > 0 && !l.travada){
+  /* preencheu o que faltava: já marca a linha para ser salva */
+  if(!l.incluir && !l.travada && l.data && l.valor > 0 && l.caminhaoId){
     l.incluir = true;
     const marca = linha.querySelector('input[data-campo="incluir"]');
     if(marca) marca.checked = true;
@@ -2366,39 +2676,72 @@ document.getElementById("arquivoCTe").addEventListener("change", async e => {
   e.target.value = "";
   if(!arquivos.length) return;
 
+  if(!dados.caminhoes.length){
+    aviso("Cadastre um caminhão antes de enviar documentos.");
+    return;
+  }
+
   document.getElementById("subImportar").textContent =
-    "PDF e XML são lidos sozinhos; foto e outros formatos entram em branco. Corrija o que precisar — nada é salvo antes de você confirmar.";
+    "Confira antes de salvar. Todos os campos podem ser corrigidos aqui.";
   document.getElementById("corpoImportar").innerHTML =
     `<p class="carregando">Lendo ${arquivos.length === 1 ? "o arquivo" : arquivos.length + " arquivos"}…</p>`;
   document.getElementById("confirmarImportacao").disabled = true;
   dlgImportar.showModal();
 
   pendentes = [];
-  for(const arquivo of arquivos) pendentes.push(...(await analisarArquivo(arquivo)));
+  for(const arquivo of arquivos){
+    pendentes.push(...(await analisarArquivo(arquivo, caminhaoDaImportacao)));
+  }
+
+  /* documentos repetidos dentro do próprio envio */
+  const vistos = new Map();
+  pendentes.forEach(l => {
+    if(l.erro || !l.cte) return;
+    const chave = (l.doc || "cte") + ":" + l.cte;
+    if(vistos.has(chave)){
+      l.aviso = `Este documento já está cadastrado — ${tipoDocTexto(l)} ${l.cte}, repetido neste mesmo envio.`;
+      l.incluir = false;
+      l.travada = true;
+    }else{
+      vistos.set(chave, l);
+    }
+  });
+
+  const lidos = pendentes.filter(l => !l.erro).length;
+  document.getElementById("subImportar").textContent = pendentes.length > 1
+    ? `${plural(pendentes.length,"documento encontrado","documentos encontrados")} · ${lidos} lidos automaticamente. Confira antes de salvar.`
+    : "Confira antes de salvar. Todos os campos podem ser corrigidos aqui.";
   desenharImportacao();
 });
 
 document.getElementById("confirmarImportacao").addEventListener("click", () => {
   const escolhidas = pendentes.filter(l => l.incluir);
-  const invalidas = escolhidas.filter(l => !l.data || !(l.valor > 0));
+  const invalidas = escolhidas.filter(l => !l.data || !(l.valor > 0) || !l.caminhaoId);
   if(invalidas.length){
-    invalidas.forEach(l => { l.aviso = "Preencha a data e o valor para salvar esta viagem."; });
+    invalidas.forEach(l => { l.aviso = "Falta o caminhão, a data ou o valor."; });
     desenharImportacao();
-    aviso("Faltou a data ou o valor em " + invalidas.length + " viagem(ns).");
+    aviso("Complete " + plural(invalidas.length, "viagem", "viagens") + " antes de salvar.");
     return;
   }
+
   semEspera(aplicar(escolhidas.map(l => ({
     tipo: "gravar", colecao: "registros", id: novoId(),
     doc: {
-      caminhaoId: estado.caminhaoId, tipo: "viagem", criadoEm: Date.now(),
-      data: l.data, cte: String(l.cte || "").trim(), local: (l.local || "").trim(),
-      valor: l.valor, anexo: l.arquivo
+      caminhaoId: l.caminhaoId, tipo: "viagem", criadoEm: Date.now(),
+      data: l.data, doc: l.doc === "nff" ? "nff" : "cte",
+      cte: String(l.cte || "").trim(), local: (l.local || "").trim(),
+      origem: (l.origem || "").trim(), valor: l.valor, anexo: l.arquivo
     }
   }))));
-  const primeira = escolhidas[0].data.split("-");
-  estado.ano = +primeira[0]; estado.mes = +primeira[1];
+
+  const primeira = escolhidas[0];
+  const partes = primeira.data.split("-");
+  estado.ano = +partes[0];
+  estado.mes = +partes[1];
+  const umCaminhaoSo = escolhidas.every(l => l.caminhaoId === primeira.caminhaoId);
   dlgImportar.close();
-  render();
+  if(umCaminhaoSo) ir("tabela", { caminhaoId: primeira.caminhaoId, tipo: "viagem" });
+  else ir("inicio");
   aviso(escolhidas.length === 1 ? "Viagem salva." : escolhidas.length + " viagens salvas.");
 });
 
