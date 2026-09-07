@@ -240,7 +240,8 @@ dialog::backdrop{background:rgba(11,13,16,.5)}
 /* ---------- entrada (login) ---------- */
 #portao{
   position:fixed;inset:0;z-index:100;background:var(--azul);
-  display:grid;place-items:center;padding:24px;
+  display:grid;place-items:center;
+  padding:calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
 }
 #portao[hidden]{display:none}
 .portao-cartao{width:min(380px,100%);text-align:center}
@@ -410,7 +411,7 @@ table.tv{width:100%;border-collapse:collapse}
 
 /* ---------- toast ---------- */
 #toast{
-  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);
   background:var(--preto);color:#fff;padding:13px 20px;border-radius:999px;font-size:14.5px;font-weight:500;
   opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:60;max-width:90vw;text-align:center;
 }
@@ -425,6 +426,8 @@ table.tv{width:100%;border-collapse:collapse}
   .marca__nome small{display:none}
   .lixo__acoes .btn{flex:1;justify-content:center}
   dialog.folha-dlg[open]{inset:0;width:100%;max-width:none;height:100dvh;max-height:none;border-radius:0}
+  dialog.folha-dlg[open] .folha-barra{padding-top:calc(12px + env(safe-area-inset-top))}
+  dialog.folha-dlg[open] .folha-area{padding-bottom:env(safe-area-inset-bottom)}
   .grade4{grid-template-columns:1fr 1fr}
   .grade4 .campo:nth-child(3),.grade4 .campo:nth-child(4){grid-column:span 2}
   .acoes-barra .btn{min-width:0}
@@ -2368,6 +2371,12 @@ marcarConexao();
 /* Guarda o programa inteiro no aparelho, para abrir sem internet. */
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+  let recarregando = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if(recarregando) return;
+    recarregando = true;
+    location.reload();
+  });
 }
 </script>
 <script src="lib/jspdf.umd.min.js"></script>
