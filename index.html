@@ -459,13 +459,13 @@ table.tv{width:100%;border-collapse:collapse}
 <div id="portao" hidden>
   <form class="portao-cartao" id="formEntrar">
     <div class="portao-placa"><b>RK</b><span>TRANSPORTES</span></div>
-    <h1>Digite a senha para entrar</h1>
-    <p>Controle de viagens e despesas</p>
+    <h1 id="tituloPortao">Digite a senha para entrar</h1>
+    <p id="subPortao">Controle de viagens e despesas</p>
     <p class="portao-erro" id="erroEntrar"></p>
     <input type="email" id="entrarEmail" value="rk@2026.com" autocomplete="username" inputmode="email" aria-label="Usuário">
     <input type="password" id="entrarSenha" placeholder="Senha" autocomplete="current-password" aria-label="Senha" required>
     <button type="submit" class="btn" id="btnEntrar">Entrar</button>
-    <p class="portao-nota">Depois de entrar uma vez, o app continua aberto neste aparelho e funciona sem internet.</p>
+    <p class="portao-nota" id="notaPortao">A primeira entrada neste aparelho precisa de internet.</p>
   </form>
 </div>
 
@@ -1349,8 +1349,8 @@ dlgMenu.addEventListener("click", e => {
   if(item.dataset.menu === "lixeira") ir("lixeira");
   if(item.dataset.menu === "backup") dlgBackup.showModal();
   if(item.dataset.menu === "sair"){
-    perguntar("Sair do app", "Para entrar de novo você vai precisar da senha.", "Sair",
-      () => autenticacao.signOut());
+    perguntar("Sair do app", "Para entrar de novo você vai precisar da senha e de internet.", "Sair",
+      () => { try{ localStorage.removeItem(TRAVA); }catch(e){} autenticacao.signOut(); });
   }
 });
 
@@ -2269,6 +2269,33 @@ document.getElementById("confirmarImportacao").addEventListener("click", () => {
 });
 
 /* ==========================================================
+   TRAVA DO APP — a senha é pedida toda vez que o app abre,
+   e funciona mesmo sem internet.
+   ========================================================== */
+const TRAVA = "rk_trava_v1";
+
+async function embaralhar(texto){
+  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texto));
+  return [...new Uint8Array(bytes)].map(b => b.toString(16).padStart(2,"0")).join("");
+}
+function lerTrava(){
+  try{ return JSON.parse(localStorage.getItem(TRAVA)); }catch(e){ return null; }
+}
+async function guardarTrava(senha){
+  const anterior = lerTrava();
+  const sal = (anterior && anterior.sal) ||
+    [...crypto.getRandomValues(new Uint8Array(8))].map(b => b.toString(16).padStart(2,"0")).join("");
+  try{
+    localStorage.setItem(TRAVA, JSON.stringify({ sal, hash: await embaralhar(sal + senha) }));
+  }catch(e){}
+}
+async function senhaConfere(senha){
+  const t = lerTrava();
+  if(!t) return false;
+  return (await embaralhar(t.sal + senha)) === t.hash;
+}
+
+/* ==========================================================
    ENTRADA E SINCRONIZAÇÃO
    ========================================================== */
 const portao = document.getElementById("portao");
@@ -2276,36 +2303,91 @@ const erroEntrar = document.getElementById("erroEntrar");
 let escutando = false, jaOfereceuEnvio = false;
 const colecoesCarregadas = new Set();
 
-document.getElementById("formEntrar").addEventListener("submit", e => {
+let destrancado = false;
+
+function pedirSenha(){
+  const jaEntrou = !!autenticacao.currentUser && !!lerTrava();
+  destrancado = false;
+  portao.hidden = false;
+  erroEntrar.textContent = "";
+  document.getElementById("entrarSenha").value = "";
+  document.getElementById("entrarEmail").hidden = jaEntrou;
+  document.getElementById("subPortao").textContent = jaEntrou
+    ? "Controle de viagens e despesas"
+    : "Primeira entrada neste aparelho";
+  document.getElementById("notaPortao").textContent = jaEntrou
+    ? "O app pede a senha toda vez que você abre, mesmo sem internet."
+    : "A primeira entrada neste aparelho precisa de internet.";
+  setTimeout(() => document.getElementById("entrarSenha").focus(), 120);
+}
+
+function destrancar(){
+  destrancado = true;
+  portao.hidden = true;
+  document.getElementById("entrarSenha").value = "";
+  if(!escutando) ouvirNuvem(); else render();
+}
+
+document.getElementById("formEntrar").addEventListener("submit", async e => {
   e.preventDefault();
-  const email = document.getElementById("entrarEmail").value.trim();
   const senha = document.getElementById("entrarSenha").value;
   const botao = document.getElementById("btnEntrar");
+  const usuario = autenticacao.currentUser;
+  const email = usuario ? usuario.email : document.getElementById("entrarEmail").value.trim();
   erroEntrar.textContent = "";
   botao.disabled = true;
   botao.textContent = "Entrando…";
-  autenticacao.signInWithEmailAndPassword(email, senha)
-    .catch(erro => {
-      const codigo = (erro && erro.code) || "";
-      erroEntrar.textContent =
-        /network/.test(codigo) ? "Sem internet. A primeira entrada precisa de conexão." :
-        /too-many/.test(codigo) ? "Muitas tentativas. Espere um minuto e tente de novo." :
-        /invalid-email|user-not-found/.test(codigo) ? "Usuário inválido." :
-        "Senha incorreta.";
-    })
-    .finally(() => { botao.disabled = false; botao.textContent = "Entrar"; });
+
+  const liberar = () => { botao.disabled = false; botao.textContent = "Entrar"; };
+
+  /* Sem internet: confere a senha guardada neste aparelho. */
+  if(!navigator.onLine){
+    if(await senhaConfere(senha)){ liberar(); destrancar(); }
+    else{
+      erroEntrar.textContent = lerTrava()
+        ? "Senha incorreta."
+        : "Sem internet. A primeira entrada precisa de conexão.";
+      liberar();
+    }
+    return;
+  }
+
+  /* Com internet: confere no cofre, assim uma troca de senha vale na hora. */
+  try{
+    await autenticacao.signInWithEmailAndPassword(email, senha);
+    await guardarTrava(senha);
+    liberar();
+    destrancar();
+  }catch(erro){
+    const codigo = (erro && erro.code) || "";
+    if(/network/.test(codigo) && await senhaConfere(senha)){
+      liberar(); destrancar(); return;
+    }
+    erroEntrar.textContent =
+      /network/.test(codigo) ? "Sem internet. Tente de novo em instantes." :
+      /too-many/.test(codigo) ? "Muitas tentativas. Espere um minuto e tente de novo." :
+      /invalid-email|user-not-found/.test(codigo) ? "Usuário inválido." :
+      "Senha incorreta.";
+    liberar();
+  }
 });
 
 autenticacao.onAuthStateChanged(usuario => {
   if(usuario){
-    portao.hidden = true;
-    document.getElementById("entrarSenha").value = "";
     if(!escutando) ouvirNuvem();
+    if(!destrancado) pedirSenha();
   }else{
-    portao.hidden = false;
     dados = { versao:1, caminhoes:[], registros:[], lixeira:[] };
     estado.vista = "inicio";
+    pedirSenha();
   }
+});
+
+/* Voltou ao app depois de um tempo fora: pede a senha de novo. */
+let saiuEm = 0;
+document.addEventListener("visibilitychange", () => {
+  if(document.hidden){ saiuEm = Date.now(); return; }
+  if(destrancado && saiuEm && Date.now() - saiuEm > 5 * 60 * 1000) pedirSenha();
 });
 
 /* Fica ouvindo o cofre: o que outra pessoa lançar aparece aqui sozinho. */
