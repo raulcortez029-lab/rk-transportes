@@ -105,13 +105,22 @@ button{cursor:pointer}
 .btn[disabled]{opacity:.45;pointer-events:none}
 
 /* ---------- busca ---------- */
-.busca{position:relative;margin-bottom:18px}
-.busca svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--cinza-texto);pointer-events:none}
-.busca input{
-  width:100%;padding:14px 44px;border-radius:12px;border:1px solid var(--cinza-linha);
-  background:var(--branco);font-size:16px;box-shadow:var(--sombra);
+.busca-botao{
+  width:46px;height:46px;border-radius:12px;border:1px solid rgba(255,255,255,.28);
+  background:rgba(255,255,255,.1);display:grid;place-items:center;color:#fff;padding:0;
 }
-.busca input:focus{outline:none;border-color:var(--azul);box-shadow:0 0 0 3px rgba(27,74,122,.14)}
+.busca-botao:hover{background:rgba(255,255,255,.2)}
+.busca-botao[aria-expanded="true"]{background:#fff;color:var(--azul);border-color:#fff}
+.barra-busca{background:var(--branco);border-bottom:1px solid var(--cinza-linha)}
+.barra-busca[hidden]{display:none}
+.barra-busca .area{padding:10px 20px}
+.busca{position:relative;max-width:1040px;margin:0 auto}
+.busca svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--cinza-texto);pointer-events:none}
+.busca input{
+  width:100%;padding:11px 42px;border-radius:10px;border:1px solid transparent;
+  background:var(--cinza);font-size:15px;
+}
+.busca input:focus{outline:none;border-color:var(--azul);background:var(--branco)}
 .busca__limpar{
   position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;
   border:0;background:var(--cinza);border-radius:50%;color:var(--cinza-texto);font-size:15px;line-height:1;
@@ -456,6 +465,7 @@ table.tv{width:100%;border-collapse:collapse}
 @media (max-width:680px){
   .tiles{grid-template-columns:1fr 1fr}
   .tiles .tile--saldo{grid-column:span 2}
+  .barra-busca .area{padding:10px 14px}
   .marca__nome{font-size:16px}
   .marca__nome small{display:none}
   .lixo__acoes .btn{flex:1;justify-content:center}
@@ -509,12 +519,24 @@ table.tv{width:100%;border-collapse:collapse}
   </button>
   <div class="topo__acoes">
     <span class="chip-offline" id="chipOffline"><i></i>sem internet</span>
+    <button class="busca-botao" id="btnBusca" aria-label="Buscar" aria-expanded="false"></button>
     <button class="menu-botao" id="btnMenu" aria-label="Abrir o menu">
       <span></span><span></span><span></span>
       <i class="conta" id="contaLixeira" hidden></i>
     </button>
   </div>
 </header>
+
+<div class="barra-busca" id="barraBusca" hidden>
+  <div class="area">
+    <div class="busca">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="campoBusca" type="search" autocomplete="off" enterkeyhint="search"
+             placeholder="Cidade, placa, documento ou data">
+      <button class="busca__limpar" id="limparBusca" data-acao="limparBusca" aria-label="Fechar busca">✕</button>
+    </div>
+  </div>
+</div>
 
 <nav class="trilha" id="trilha"></nav>
 <main class="area" id="tela"></main>
@@ -979,18 +1001,35 @@ function resultadosHTML(consulta){
 
 function atualizarBusca(){
   const campo = document.getElementById("campoBusca");
-  if(!campo) return;
-  termoBusca = campo.value;
   const area = document.getElementById("areaBusca");
   const placas = document.getElementById("areaPlacas");
-  const limpar = document.getElementById("limparBusca");
-  if(limpar) limpar.hidden = !termoBusca;
+  if(!campo || !area || !placas) return;
+  termoBusca = campo.value;
   if(termoBusca.trim().length < 2){
     area.hidden = true; area.innerHTML = ""; placas.hidden = false;
     return;
   }
   area.hidden = false; placas.hidden = true;
   area.innerHTML = resultadosHTML(termoBusca);
+}
+
+function abrirBusca(){
+  const barra = document.getElementById("barraBusca");
+  const campo = document.getElementById("campoBusca");
+  if(estado.vista !== "inicio") ir("inicio");
+  barra.hidden = false;
+  document.getElementById("btnBusca").setAttribute("aria-expanded", "true");
+  campo.focus();
+  atualizarBusca();
+}
+
+function fecharBusca(){
+  const campo = document.getElementById("campoBusca");
+  campo.value = "";
+  termoBusca = "";
+  document.getElementById("barraBusca").hidden = true;
+  document.getElementById("btnBusca").setAttribute("aria-expanded", "false");
+  atualizarBusca();
 }
 
 /* ---------------- tela 1: caminhões ---------------- */
@@ -1026,14 +1065,7 @@ function telaInicio(){
         <button class="btn" data-acao="novoCaminhao">Cadastrar caminhão</button>
       </div>` : ""}
     </div>
-    ${dados.caminhoes.length ? `
-      <div class="busca">
-        ${ICONES.lupa}
-        <input id="campoBusca" type="search" autocomplete="off" enterkeyhint="search"
-               placeholder="Buscar cidade, placa, documento ou data" value="${esc(termoBusca)}">
-        <button class="busca__limpar" id="limparBusca" data-acao="limparBusca" ${termoBusca ? "" : "hidden"} aria-label="Limpar busca">✕</button>
-      </div>
-      <div id="areaBusca" hidden></div>` : ""}
+    <div id="areaBusca" hidden></div>
     <div id="areaPlacas">${dados.caminhoes.length ? `<div class="placas">${cartoes}
       <button class="placa placa--nova" data-acao="novoCaminhao">+ Cadastrar caminhão</button></div>` : vazio}</div>
   `;
@@ -1558,6 +1590,10 @@ document.getElementById("icPainel").innerHTML = ICONES.painel;
 document.getElementById("icLixo").innerHTML = ICONES.excluir;
 document.getElementById("icBackup").innerHTML = ICONES.backup;
 document.getElementById("icSair").innerHTML = ICONES.sair;
+document.getElementById("btnBusca").innerHTML = ICONES.lupa;
+document.getElementById("btnBusca").addEventListener("click", () => {
+  document.getElementById("barraBusca").hidden ? abrirBusca() : fecharBusca();
+});
 document.getElementById("btnMenu").addEventListener("click", () => dlgMenu.showModal());
 dlgMenu.addEventListener("click", e => {
   const item = e.target.closest("[data-menu]");
@@ -1659,11 +1695,7 @@ document.addEventListener("click", e => {
     caminhaoDaImportacao = acao === "importarCTe" ? estado.caminhaoId : "";
     return document.getElementById("arquivoCTe").click();
   }
-  if(acao === "limparBusca"){
-    const campo = document.getElementById("campoBusca");
-    if(campo){ campo.value = ""; campo.focus(); }
-    return atualizarBusca();
-  }
+  if(acao === "limparBusca") return fecharBusca();
   if(acao === "sugestao"){
     const campo = document.getElementById("campoBusca");
     if(campo) campo.value = alvo.dataset.termo || "";
@@ -2263,6 +2295,7 @@ const PDFJS_WORKER = "lib/pdf.worker.min.js";
 const dlgImportar = document.getElementById("dlgImportar");
 let pendentes = [];
 let caminhaoDaImportacao = "";
+let ignoradosNoEnvio = { manifestos: 0, boletos: 0 };
 
 async function carregarPdfJs(){
   if(window.pdfjsLib) return window.pdfjsLib;
@@ -2313,26 +2346,48 @@ function chaveDe(itens){
   return candidatas.find(c => c.length === 44 && (c.slice(20,22) === "57" || c.slice(20,22) === "55")) || null;
 }
 
+/* O envio costuma trazer junto o manifesto (MDF-e) e boletos, que não são
+   viagens. Eles são reconhecidos e deixados de fora. */
+function classificarPagina(itens){
+  const texto = semAcento(itens.map(i => i.t).join(" "));
+  if(/damdfe|manifesto eletronico|manifesto de documentos|manifesto de carga/.test(texto)) return { tipo:"manifesto" };
+  if(/local de pagamento/.test(texto) && /vencimento/.test(texto)) return { tipo:"boleto" };
+  if(/nosso numero/.test(texto) && /cedente|benefici/.test(texto)) return { tipo:"boleto" };
+  const chave = chaveDe(itens);
+  return chave ? { tipo:"documento", chave } : { tipo:"continuacao" };
+}
+
 /* Um PDF pode trazer vários documentos, e cada documento pode ocupar mais
    de uma página. A separação segue a chave de acesso: página sem chave é
    continuação do documento anterior. */
 function separarDocumentos(itens){
   const paginas = [...new Set(itens.map(i => i.p))].sort((a,b) => a - b);
   const grupos = [];
+  const ignorados = { manifestos: 0, boletos: 0 };
+  let atual = null;
+
   paginas.forEach(pg => {
     const daPagina = itens.filter(i => i.p === pg);
-    const chave = chaveDe(daPagina);
-    const ultimo = grupos[grupos.length - 1];
-    if(chave && (!ultimo || ultimo.chave !== chave)){
-      grupos.push({ chave, paginas:[pg], itens: daPagina.slice() });
-    }else if(ultimo){
-      ultimo.paginas.push(pg);
-      ultimo.itens.push(...daPagina);
+    const classe = classificarPagina(daPagina);
+
+    if(classe.tipo === "manifesto"){ ignorados.manifestos++; atual = null; return; }
+    if(classe.tipo === "boleto"){ ignorados.boletos++; atual = null; return; }
+
+    if(classe.tipo === "documento" && (!atual || atual.chave !== classe.chave)){
+      atual = { chave: classe.chave, paginas:[pg], itens: daPagina.slice() };
+      grupos.push(atual);
+    }else if(atual){
+      atual.paginas.push(pg);
+      atual.itens.push(...daPagina);
     }else{
-      grupos.push({ chave: null, paginas:[pg], itens: daPagina.slice() });
+      atual = { chave: null, paginas:[pg], itens: daPagina.slice() };
+      grupos.push(atual);
     }
   });
-  return grupos;
+
+  /* havendo documentos com chave, o resto é papelada solta e sai fora */
+  const comChave = grupos.filter(g => g.chave);
+  return { documentos: comChave.length ? comChave : grupos, ignorados };
 }
 
 /* Lê os campos de um documento pela posição de cada rótulo na página. */
@@ -2379,12 +2434,13 @@ function lerDocumento(grupo){
   if(data) r.data = `${data[3]}-${data[2]}-${data[1]}`;
 
   /* cidade abaixo de um rótulo (origem / destino da prestação) */
+  const limparCidade = t => String(t||"").replace(/\s*[-–]\s*\d{5,8}\s*$/, "").trim();
   const cidadeAbaixoDe = rotulo => {
     if(!rotulo) return "";
     const v = p1.filter(i => i.y < rotulo.y && i.y > rotulo.y - 17 && i.x > rotulo.x - 8 && i.x < rotulo.x + 200
                           && i.t.length > 2 && !/^\d+$/.test(i.t) && !/^(IBGE|CEP|UF|FONE)$/i.test(i.t))
                 .sort((a,b) => (rotulo.y - a.y) - (rotulo.y - b.y) || a.x - b.x)[0];
-    return v ? v.t : "";
+    return v ? limparCidade(v.t) : "";
   };
   r.local  = cidadeAbaixoDe(p1.find(i => /DESTINO/i.test(i.t) && /PRESTA/i.test(i.t)) || acha(/^DESTINO/i));
   r.origem = cidadeAbaixoDe(p1.find(i => /ORIGEM/i.test(i.t) && /PRESTA/i.test(i.t)) || acha(/^ORIGEM/i));
@@ -2403,17 +2459,30 @@ function lerDocumento(grupo){
   const rotTotal = p1.find(i => /VALORTOTALDOS?SERVI|VALORTOTALDANOTA|VALORTOTALDAPRESTA/.test(semEspaco(i.t)))
                 || p1.find(i => /^VALORARECEBER|^VALORA$|^VALORTOTAL$/.test(semEspaco(i.t)));
   if(rotTotal){
-    const v = p1.filter(i => i.y < rotTotal.y && i.y > rotTotal.y - 28 && i.x > rotTotal.x - 40 && i.x < rotTotal.x + 230 && ehDinheiro(i.t))
+    const v = p1.filter(i => i.y < rotTotal.y && i.y > rotTotal.y - 28 && i.x > rotTotal.x - 5 && i.x < rotTotal.x + 230 && ehDinheiro(i.t))
                 .sort((a,b) => (rotTotal.y - a.y) - (rotTotal.y - b.y))[0];
     if(v) r.total = dinheiroParaNumero(v.t);
   }
   if(r.valor == null && r.total != null) r.valor = r.total;
+  /* o total nunca é menor que o frete; se for, peguei a coluna errada */
+  if(r.total != null && r.valor != null && r.total <= r.valor) r.total = null;
 
-  /* placas que aparecem no documento, para achar o caminhão certo */
+  /* placas: às vezes num campo próprio, às vezes no meio das observações
+     ("Motorista: ... - Placa: FNF6C11 - Carreta1: AJF8E53") */
+  const guardarPlaca = t => {
+    const limpa = String(t||"").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if(/^[A-Z]{3}\d[A-Z0-9]\d{2}$/.test(limpa)) r.placas.push(limpa);
+  };
   grupo.itens.forEach(i => {
     const t = i.t.trim().toUpperCase();
-    if(/^[A-Z]{3}-?\d[A-Z]\d{2}$/.test(t) || /^[A-Z]{3}-?\d{4}$/.test(t)) r.placas.push(t.replace("-",""));
+    if(/^[A-Z]{3}-?\d[A-Z0-9]\d{2}$/.test(t)) guardarPlaca(t);
   });
+  const textoTodo = grupo.itens.map(i => i.t).join(" ");
+  (textoTodo.match(/(?:plac[ao]|carreta|cavalo|reboque|ve[íi]culo)\s*\d*\s*[:\-]?\s*[A-Z]{3}\s?-?\s?\d[A-Z0-9]\d{2}/gi) || [])
+    .forEach(trecho => {
+      const m = trecho.match(/([A-Z]{3}\s?-?\s?\d[A-Z0-9]\d{2})\s*$/i);
+      if(m) guardarPlaca(m[1]);
+    });
   r.placas = [...new Set(r.placas)];
   return r;
 }
@@ -2539,8 +2608,10 @@ async function analisarArquivo(arquivo, caminhaoPadrao){
     }else if(ehPDF){
       const itens = await itensDoPDF(arquivo);
       if(!itens.length) throw new Error("sem-texto");
-      const grupos = separarDocumentos(itens);
-      achadas = grupos.map(g => {
+      const separados = separarDocumentos(itens);
+      ignoradosNoEnvio.manifestos += separados.ignorados.manifestos;
+      ignoradosNoEnvio.boletos += separados.ignorados.boletos;
+      achadas = separados.documentos.map(g => {
         const linha = Object.assign(vazia(), lerDocumento(g));
         linha.detalhe = g.paginas.length > 1
           ? `páginas ${g.paginas[0]}-${g.paginas[g.paginas.length-1]}`
@@ -2576,8 +2647,10 @@ async function analisarArquivo(arquivo, caminhaoPadrao){
     if(linha.erro) return;
     const doDocumento = caminhaoPelaPlaca(linha.placas);
     if(doDocumento) linha.caminhaoId = doDocumento.id;
-    else if(!linha.caminhaoId && linha.placas.length){
-      linha.aviso = "Não achei a placa " + linha.placas.join(" / ") + " nos caminhões cadastrados. Escolha o caminhão.";
+    else if(!linha.caminhaoId){
+      linha.aviso = linha.placas.length
+        ? "Não achei a placa " + linha.placas.join(" / ") + " nos caminhões cadastrados. Escolha o caminhão."
+        : "Não consegui identificar a placa neste documento. Escolha o caminhão.";
     }
     const repetido = documentoJaCadastrado(linha.doc, linha.cte);
     if(repetido){
@@ -2689,6 +2762,7 @@ document.getElementById("arquivoCTe").addEventListener("change", async e => {
   dlgImportar.showModal();
 
   pendentes = [];
+  ignoradosNoEnvio = { manifestos: 0, boletos: 0 };
   for(const arquivo of arquivos){
     pendentes.push(...(await analisarArquivo(arquivo, caminhaoDaImportacao)));
   }
@@ -2708,9 +2782,15 @@ document.getElementById("arquivoCTe").addEventListener("change", async e => {
   });
 
   const lidos = pendentes.filter(l => !l.erro).length;
-  document.getElementById("subImportar").textContent = pendentes.length > 1
-    ? `${plural(pendentes.length,"documento encontrado","documentos encontrados")} · ${lidos} lidos automaticamente. Confira antes de salvar.`
-    : "Confira antes de salvar. Todos os campos podem ser corrigidos aqui.";
+  const fora = [];
+  if(ignoradosNoEnvio.manifestos) fora.push(plural(ignoradosNoEnvio.manifestos, "manifesto", "manifestos"));
+  if(ignoradosNoEnvio.boletos) fora.push(plural(ignoradosNoEnvio.boletos, "boleto", "boletos"));
+  document.getElementById("subImportar").textContent =
+    (pendentes.length > 1
+      ? `${plural(pendentes.length,"documento encontrado","documentos encontrados")} · ${lidos} lidos automaticamente.`
+      : "Confira antes de salvar.") +
+    (fora.length ? ` ${fora.join(" e ")} ficaram de fora.` : "") +
+    " Todos os campos podem ser corrigidos aqui.";
   desenharImportacao();
 });
 

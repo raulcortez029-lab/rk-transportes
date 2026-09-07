@@ -36,6 +36,8 @@ ENVIAR DOCUMENTOS (o programa preenche para você)
   Não precisa separar nada. O programa acha cada CT-e ou nota pela chave
   de acesso e separa por documento, mesmo que um deles tenha várias
   páginas. Cada documento vira uma linha na tela de conferência.
+  O manifesto (MDF-e) e os boletos que vêm no meio são reconhecidos e
+  deixados de fora sozinhos - o aviso no topo diz quantos ficaram fora.
 
   DOCUMENTO REPETIDO
   Se o documento já estiver lançado, aparece "Este documento já está
@@ -60,8 +62,9 @@ ENVIAR DOCUMENTOS (o programa preenche para você)
   Observação: o arquivo em si não fica guardado, apenas as informações
   lidas dele (o nome do arquivo fica anotado no registro).
 
-BUSCAR (a lupa na tela inicial)
-  O campo de busca fica no alto da tela inicial. Dá para procurar por:
+BUSCAR (a lupa no topo)
+  Toque na lupa ao lado do menu, no alto da tela. Abre uma faixa de busca.
+  Dá para procurar por:
     - Cidade: "curitiba" mostra as viagens que passaram por lá, dizendo
       se foi origem ou destino, com caminhão, data e valor.
     - Placa: "PLK8D51" traz tudo daquele caminhão.
