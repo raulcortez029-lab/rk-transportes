@@ -1,5 +1,5 @@
 /* Guarda o RK Transportes no aparelho para funcionar sem internet. */
-const VERSAO = "rk-transportes-v4";
+const VERSAO = "rk-transportes-v5";
 const ARQUIVOS = [
   "./",
   "index.html",

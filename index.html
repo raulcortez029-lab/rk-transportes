@@ -711,6 +711,8 @@ function dataBR(iso){
   return `${d}/${m}/${a}`;
 }
 function periodoTexto(mes,ano){ return `${MESES[mes-1]} de ${ano}`; }
+const tipoDocTexto = r => (r && r.doc === "nff") ? "NFF" : "CT-e";
+const docTexto = r => r && r.cte ? `${tipoDocTexto(r)} ${r.cte}` : "—";
 function maiuscula(t){ return t.charAt(0).toUpperCase() + t.slice(1); }
 const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
 function esc(t){
@@ -961,7 +963,10 @@ function telaPainel(){
     : `<p style="margin:0;color:var(--cinza-texto);font-size:14px">Nenhum lançamento neste mês.</p>`;
 
   return `
-    <div class="linha-titulo"><div><h1 class="titulo">Dashboard</h1></div></div>
+    <div class="linha-titulo">
+      <div><h1 class="titulo">Dashboard</h1></div>
+      <button class="btn btn--claro" data-acao="resumoPDF">Baixar resumo do mês em PDF</button>
+    </div>
     ${barraMes()}
 
     <div class="tiles">
@@ -1021,7 +1026,7 @@ function descricaoLixo(l){
   }
   if(l.tipo === "viagem"){
     return { icone:ICONES.papel, titulo:`Viagem · ${esc(l.placa||"")}`,
-             detalhe: `${dataBR(r.data)}${r.cte ? " · CT-e " + esc(r.cte) : ""}${r.local ? " · " + esc(r.local) : ""}`,
+             detalhe: `${dataBR(r.data)}${r.cte ? " · " + esc(docTexto(r)) : ""}${r.local ? " · " + esc(r.local) : ""}`,
              valor: brl(r.valor) };
   }
   return { icone:ICONES.papel, titulo:`Despesa · ${esc(l.placa||"")}`,
@@ -1094,11 +1099,11 @@ function telaTabela(c){
   }else if(ehViagem){
     corpo = `<div class="cartao">
       <table class="tabela">
-        <thead><tr><th>Data</th><th>Nº do CT-e</th><th>Local</th><th class="dinheiro">Valor do frete</th><th class="acoes"></th></tr></thead>
+        <thead><tr><th>Data</th><th>Documento</th><th>Local</th><th class="dinheiro">Valor do frete</th><th class="acoes"></th></tr></thead>
         <tbody>
           ${lista.map(r=>`<tr>
             <td data-rot="Data" class="num">${dataBR(r.data)}</td>
-            <td data-rot="Nº do CT-e" class="num">${esc(r.cte||"—")}</td>
+            <td data-rot="Documento" class="num">${esc(docTexto(r))}</td>
             <td data-rot="Local">${esc(r.local||"—")}</td>
             <td data-rot="Valor do frete" class="dinheiro">${brl(r.valor)}</td>
             <td class="acoes">
@@ -1233,6 +1238,7 @@ function mascaraMoeda(campo){
 /* ---------------- lançamento de viagem / despesa ---------------- */
 let registroEmEdicao = null;
 let ehDiaria = false;
+let tipoDoc = "cte";
 
 function dataPadrao(){
   const mesmoMes = estado.ano === hoje.getFullYear() && estado.mes === hoje.getMonth()+1;
@@ -1244,6 +1250,7 @@ function abrirFormRegistro(r){
   registroEmEdicao = r || null;
   const ehViagem = estado.tipo === "viagem";
   ehDiaria = r ? !!r.diaria : false;
+  tipoDoc = (r && r.doc === "nff") ? "nff" : "cte";
 
   document.getElementById("tituloRegistro").textContent =
     (r ? "Editar " : "Adicionar ") + (ehViagem ? "viagem" : "despesa");
@@ -1257,7 +1264,14 @@ function abrirFormRegistro(r){
     <p class="erro" id="erroRegistro"></p>
     ${r && r.anexo ? `<p class="dica" style="margin:-4px 0 14px">Preenchido a partir de <b>${esc(r.anexo)}</b>.</p>` : ""}
     <div class="campo"><label for="inData">Data da viagem</label><input type="date" id="inData" value="${data}" required></div>
-    <div class="campo"><label for="inCte">Nº do CT-e</label><input id="inCte" inputmode="numeric" autocomplete="off" placeholder="Ex.: 12345" value="${r?esc(r.cte||""):""}"></div>
+    <div class="campo"><label>Documento</label>
+      <div class="seletor" id="seletorDoc">
+        <button type="button" data-doc="cte" aria-pressed="${tipoDoc!=='nff'}">CT-e</button>
+        <button type="button" data-doc="nff" aria-pressed="${tipoDoc==='nff'}">NFF</button>
+      </div>
+    </div>
+    <div class="campo"><label for="inCte" id="rotuloDoc">${tipoDoc==='nff'?'Nº da NFF':'Nº do CT-e'}</label>
+      <input id="inCte" inputmode="numeric" autocomplete="off" placeholder="Ex.: 12345" value="${r?esc(r.cte||""):""}"></div>
     <div class="campo"><label for="inLocal">Local</label><input id="inLocal" autocomplete="off" placeholder="Ex.: Ribeirão Preto / SP" value="${r?esc(r.local||""):""}"></div>
     <div class="campo"><label for="inValor">Valor do frete</label>
       <div class="moeda"><span>R$</span><input id="inValor" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${valor}"></div>
@@ -1280,6 +1294,16 @@ function abrirFormRegistro(r){
     </div>`;
 
   mascaraMoeda(document.getElementById("inValor"));
+
+  const seletorDoc = document.getElementById("seletorDoc");
+  if(seletorDoc){
+    seletorDoc.addEventListener("click", e => {
+      const b = e.target.closest("button"); if(!b) return;
+      tipoDoc = b.dataset.doc;
+      seletorDoc.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+      document.getElementById("rotuloDoc").textContent = tipoDoc === "nff" ? "Nº da NFF" : "Nº do CT-e";
+    });
+  }
 
   const seletor = document.getElementById("seletorTipo");
   if(seletor){
@@ -1311,6 +1335,7 @@ document.getElementById("formRegistro").addEventListener("submit", e => {
   if(ehViagem){
     base.cte = document.getElementById("inCte").value.trim();
     base.local = document.getElementById("inLocal").value.trim();
+    base.doc = tipoDoc;
   }else{
     const servico = document.getElementById("inServico").value.trim();
     if(!servico) return falhar("Descreva o serviço.");
@@ -1381,7 +1406,7 @@ document.addEventListener("click", e => {
     const r = dados.registros.find(x => x.id === id);
     if(!r) return;
     const nome = estado.tipo === "viagem"
-      ? `a viagem de ${dataBR(r.data)}${r.cte ? " (CT-e " + r.cte + ")" : ""}`
+      ? `a viagem de ${dataBR(r.data)}${r.cte ? " (" + docTexto(r) + ")" : ""}`
       : `a despesa "${r.servico}" de ${dataBR(r.data)}`;
     return perguntar("Mover para a lixeira",
       `${maiuscula(nome)}, no valor de ${brl(r.valor)}, sai da tabela e vai para a lixeira. Você pode restaurar quando quiser.`,
@@ -1439,6 +1464,7 @@ document.addEventListener("click", e => {
   }
   if(acao === "importarCTe") return document.getElementById("arquivoCTe").click();
   if(acao === "verTabela") return verTabela();
+  if(acao === "resumoPDF") return resumoPDF();
   if(acao === "exportarPDF") return exportarPDF();
   if(acao === "exportarExcel") return exportarExcel();
 });
@@ -1611,7 +1637,7 @@ const colLetra = i => String.fromCharCode(65 + i);
 function exportarExcel(){
   const R = dadosRelatorio();
   const cabecalhos = R.ehViagem
-    ? ["Data","Nº do CT-e","Local","Valor do frete"]
+    ? ["Data","Documento","Local","Valor do frete"]
     : ["Data","Serviço","Tipo","Valor"];
   const larguras = R.ehViagem ? [12,18,38,18] : [12,42,12,18];
 
@@ -1634,7 +1660,7 @@ function exportarExcel(){
 
   R.lista.forEach(r => {
     linha(l => R.ehViagem
-      ? cel(0,l,4,"n",serialExcel(r.data)) + cel(1,l,5,"s",r.cte||"") + cel(2,l,5,"s",r.local||"") + cel(3,l,6,"n",r.valor)
+      ? cel(0,l,4,"n",serialExcel(r.data)) + cel(1,l,5,"s",r.cte ? docTexto(r) : "") + cel(2,l,5,"s",r.local||"") + cel(3,l,6,"n",r.valor)
       : cel(0,l,4,"n",serialExcel(r.data)) + cel(1,l,5,"s",r.servico||"") + cel(2,l,5,"s",r.diaria?"Diária":"Serviço") + cel(3,l,6,"n",r.valor)
     );
   });
@@ -1717,6 +1743,114 @@ function exportarExcel(){
   aviso("Planilha baixada.");
 }
 
+/* ---------------- resumo do mês em PDF ---------------- */
+function resumoPDF(){
+  if(!(window.jspdf && window.jspdf.jsPDF)){ aviso("Não consegui abrir o gerador de PDF."); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:"mm", format:"a4" });
+  if(typeof doc.autoTable !== "function"){ aviso("Não consegui abrir o gerador de PDF."); return; }
+
+  const azul = [14,42,71], cinza = [237,240,244], texto = [11,13,16], suave = [90,100,115];
+  const larg = doc.internal.pageSize.getWidth();
+  const alt  = doc.internal.pageSize.getHeight();
+  const periodo = maiuscula(periodoTexto(estado.mes, estado.ano));
+  const t = totaisPeriodo(estado.ano, estado.mes);
+  const agora = new Date();
+  const geradoEm = agora.toLocaleDateString("pt-BR") + " às " +
+                   agora.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+
+  /* faixa do topo */
+  doc.setFillColor.apply(doc, azul);
+  doc.rect(0, 0, larg, 26, "F");
+  doc.setTextColor(255,255,255); doc.setFont("helvetica","bold"); doc.setFontSize(17);
+  doc.text("RK TRANSPORTES", 14, 13);
+  doc.setFont("helvetica","normal"); doc.setFontSize(9.5); doc.setTextColor(180,200,220);
+  doc.text("Controle de viagens e despesas", 14, 19.5);
+  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(255,255,255);
+  doc.text("Resumo do mês", larg - 14, 16, { align:"right" });
+
+  /* período */
+  doc.setTextColor.apply(doc, texto); doc.setFont("helvetica","bold"); doc.setFontSize(15);
+  doc.text(periodo, 14, 38);
+  doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor.apply(doc, suave);
+  doc.text(plural(t.viagens, "viagem no mês", "viagens no mês"), larg - 14, 38, { align:"right" });
+
+  /* três números grandes */
+  const colunas = [14, 74.7, 135.4], largura = 56.6, topo = 45, altura = 25;
+  const cartao = (i, rotulo, valor, destaque) => {
+    doc.setFillColor.apply(doc, destaque ? azul : cinza);
+    doc.roundedRect(colunas[i], topo, largura, altura, 2.5, 2.5, "F");
+    doc.setFont("helvetica","bold"); doc.setFontSize(8);
+    doc.setTextColor.apply(doc, destaque ? [169,189,211] : suave);
+    doc.text(rotulo.toUpperCase(), colunas[i] + 5, topo + 8);
+    doc.setFontSize(13.5);
+    doc.setTextColor.apply(doc, destaque ? [255,255,255] : texto);
+    doc.text(brl(valor), colunas[i] + 5, topo + 18);
+  };
+  cartao(0, "Fretes", t.fretes, false);
+  cartao(1, "Despesas", t.despesas, false);
+  cartao(2, "Saldo", t.saldo, true);
+
+  doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor.apply(doc, suave);
+  doc.text(`Despesas do mês:  serviços ${brl(t.servicos)}   ·   diárias ${brl(t.diarias)}`, 14, topo + altura + 9);
+
+  /* por caminhão */
+  const porCaminhao = dados.caminhoes
+    .map(c => Object.assign({ c }, totaisPeriodo(estado.ano, estado.mes, c.id)))
+    .filter(x => x.fretes || x.despesas)
+    .sort((a,b) => b.saldo - a.saldo);
+
+  const estiloTabela = {
+    styles: { font:"helvetica", fontSize:10, cellPadding:2.6, textColor:texto, lineColor:[220,226,234], lineWidth:.1 },
+    headStyles: { fillColor:azul, textColor:255, fontStyle:"bold", fontSize:9.5 },
+    footStyles: { fillColor:cinza, textColor:texto, fontStyle:"bold", fontSize:10 },
+    alternateRowStyles: { fillColor:[250,251,252] },
+    margin: { left:14, right:14, bottom:20 }
+  };
+
+  doc.autoTable(Object.assign({
+    startY: topo + altura + 16,
+    head: [["Caminhão","Viagens","Fretes","Despesas","Saldo"]],
+    body: porCaminhao.length
+      ? porCaminhao.map(x => [x.c.placa, String(x.viagens), brl(x.fretes), brl(x.despesas), brl(x.saldo)])
+      : [[{ content:"Nenhum lançamento neste mês.", colSpan:5, styles:{ halign:"center", textColor:suave } }]],
+    foot: porCaminhao.length
+      ? [["Total", String(t.viagens), brl(t.fretes), brl(t.despesas), brl(t.saldo)]]
+      : [],
+    columnStyles: { 1:{ halign:"center", cellWidth:22 }, 2:{ halign:"right" }, 3:{ halign:"right" }, 4:{ halign:"right" } }
+  }, estiloTabela));
+
+  /* últimos 6 meses */
+  const serie = [];
+  for(let i = 5; i >= 0; i--){
+    let m = estado.mes - i, a = estado.ano;
+    while(m < 1){ m += 12; a--; }
+    serie.push(Object.assign({ m, a }, totaisPeriodo(a, m)));
+  }
+
+  let y = doc.lastAutoTable.finalY + 12;
+  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor.apply(doc, texto);
+  doc.text("Últimos 6 meses", 14, y);
+
+  doc.autoTable(Object.assign({
+    startY: y + 4,
+    head: [["Mês","Viagens","Fretes","Despesas","Saldo"]],
+    body: serie.map(x => [
+      maiuscula(MESES[x.m-1]) + " de " + x.a, String(x.viagens),
+      brl(x.fretes), brl(x.despesas), brl(x.saldo)
+    ]),
+    columnStyles: { 1:{ halign:"center", cellWidth:22 }, 2:{ halign:"right" }, 3:{ halign:"right" }, 4:{ halign:"right" } },
+    didDrawPage: () => {
+      doc.setFontSize(8.5); doc.setTextColor.apply(doc, suave); doc.setFont("helvetica","normal");
+      doc.text("RK Transportes · resumo gerado em " + geradoEm, 14, alt - 9);
+      doc.text("Página " + doc.internal.getNumberOfPages(), larg - 14, alt - 9, { align:"right" });
+    }
+  }, estiloTabela));
+
+  doc.save(`RK-Transportes_Resumo_${String(estado.mes).padStart(2,"0")}-${estado.ano}.pdf`);
+  aviso("Resumo do mês baixado.");
+}
+
 /* ---------------- PDF ---------------- */
 function exportarPDF(){
   const R = dadosRelatorio();
@@ -1731,10 +1865,10 @@ function exportarPDF(){
   const geradoEm = hoje.toLocaleDateString("pt-BR") + " às " + hoje.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
 
   const cabecalhos = R.ehViagem
-    ? [["Data","Nº do CT-e","Local","Valor do frete"]]
+    ? [["Data","Documento","Local","Valor do frete"]]
     : [["Data","Serviço","Tipo","Valor"]];
   const corpo = R.lista.map(r => R.ehViagem
-    ? [dataBR(r.data), r.cte||"—", r.local||"—", brl(r.valor)]
+    ? [dataBR(r.data), docTexto(r), r.local||"—", brl(r.valor)]
     : [dataBR(r.data), r.servico||"—", r.diaria?"Diária":"Serviço", brl(r.valor)]);
 
   const ultima = cabecalhos[0].length - 1;
@@ -1822,7 +1956,7 @@ document.head.insertAdjacentHTML("beforeend", "<style>" + CSS_RELATORIO + "</sty
 
 function relatorioHTML(R){
   const linhas = R.lista.map(r => R.ehViagem
-    ? `<tr><td class="rel-c">${dataBR(r.data)}</td><td class="rel-c">${esc(r.cte||"—")}</td><td>${esc(r.local||"—")}</td><td class="rel-d">${brl(r.valor)}</td></tr>`
+    ? `<tr><td class="rel-c">${dataBR(r.data)}</td><td class="rel-c">${esc(docTexto(r))}</td><td>${esc(r.local||"—")}</td><td class="rel-d">${brl(r.valor)}</td></tr>`
     : `<tr><td class="rel-c">${dataBR(r.data)}</td><td>${esc(r.servico||"—")}</td><td class="rel-c">${r.diaria?"Diária":"Serviço"}</td><td class="rel-d">${brl(r.valor)}</td></tr>`
   ).join("");
 
@@ -1837,7 +1971,7 @@ function relatorioHTML(R){
   }
 
   const cab = R.ehViagem
-    ? '<th class="rel-c">Data</th><th class="rel-c">Nº do CT-e</th><th>Local</th><th class="rel-d">Valor do frete</th>'
+    ? '<th class="rel-c">Data</th><th class="rel-c">Documento</th><th>Local</th><th class="rel-d">Valor do frete</th>'
     : '<th class="rel-c">Data</th><th>Serviço</th><th class="rel-c">Tipo</th><th class="rel-d">Valor</th>';
 
   const agora = new Date();
@@ -1852,7 +1986,7 @@ function tabelaTelaHTML(R){
   const linhas = R.lista.map(r => {
     const dia = dataBR(r.data);
     const meio = R.ehViagem
-      ? `${esc(r.local || "—")}${r.cte ? `<small>CT-e ${esc(r.cte)}</small>` : ""}`
+      ? `${esc(r.local || "—")}${r.cte ? `<small>${esc(docTexto(r))}</small>` : ""}`
       : `${esc(r.servico || "—")}${r.diaria ? '<small class="tv-tag">Diária</small>' : ""}`;
     return `<tr>
       <td class="tv-data">${dia.slice(0,5)}<small>${dia.slice(6)}</small></td>
